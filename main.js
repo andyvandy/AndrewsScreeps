@@ -1,4 +1,5 @@
 var rolePeasant = require('role.peasant');
+var role_proto = require('prototype.role');
 
 
 
@@ -32,9 +33,12 @@ module.exports.loop = function () {
             //credit to https://github.com/Garethp/Screeps/blob/master/performRoles.js
             if(creep.spawning || creep.memory.role == undefined || (creep.memory.active !== undefined && !creep.memory.active))
                 continue;
-            var job = Object.create(rolePeasant);
+            var job = Object.assign(role_proto,rolePeasant);
+            //job.prototype=role_proto;
             job.setCreep(creep);
-            try { job.run(); } catch(e) { };
+            try { job.run(); } catch(e) { 
+                console.log("peasant error: " + e);
+             };
         }
     }
 };

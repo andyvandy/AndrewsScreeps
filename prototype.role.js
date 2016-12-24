@@ -26,7 +26,20 @@ var role_proto={
 
     action: function(){} ,
 
-    lastwill: function(){}
+    lastwill: function(){},
+
+    layroads: function(){
+        // check if the creep is on a road, and if not build one
+        var road =this.creep.pos.lookFor(LOOK_STRUCTURES,{
+                            filter: (structure) => { return structure.structureType == STRUCTURE_ROAD; }} );
+        if (!road.length){
+            var found_site =this.creep.pos.lookFor(LOOK_CONSTRUCTION_SITES,{
+                            filter: (site) => { return site.structureType == STRUCTURE_ROAD; }} );
+            if(!found_site.length){
+                this.creep.pos.createConstructionSite(STRUCTURE_ROAD);
+            }
+        }
+    }
     
 }
 
