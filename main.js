@@ -1,7 +1,6 @@
-var rolePeasant = require('role.peasant');
-var role_proto = require('prototype.role');
 var roomPopulator = require('room.populator');
-
+var taskMaster =require('task.master');
+var towerController = require('tower.controller');
 
 
 
@@ -17,7 +16,14 @@ module.exports.loop = function () {
         }
     }
 
-        
+    //Control my towers
+    var towers = _.filter(Game.structures, (s)=> s.structureType== STRUCTURE_TOWER);
+    for(var s in towers) {    
+        var tower= towers[s];
+        towerController.run(tower);
+    }
+    
+    // spawn creeps
     if(Game.time % 10 === 0 ){
         // run this every once in a while to save cpu
         //count the peasants, and build new ones as needed
@@ -29,19 +35,7 @@ module.exports.loop = function () {
         }
     }
 
-
-    for(var name in Game.creeps) {
-        var creep = Game.creeps[name];
-        if(creep.memory.role == 'peasant') {
-            //credit to https://github.com/Garethp/Screeps/blob/master/performRoles.js
-            if(creep.spawning || creep.memory.role == undefined || (creep.memory.active !== undefined && !creep.memory.active))
-                continue;
-            var job = Object.assign(role_proto,rolePeasant);
-            //job.prototype=role_proto;
-            job.setCreep(creep);
-            try { job.run(); } catch(e) { 
-                console.log("peasant error: " + e);
-             };
-        }
-    }
+    // make each creep perform their task
+    taskMaster.run();
+    
 };

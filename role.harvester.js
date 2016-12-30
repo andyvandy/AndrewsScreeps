@@ -1,5 +1,6 @@
 /*
     The harvester will be created with a flag in mind on which to build a container and mine
+    
 
 */
 var role_proto = require('prototype.role');
@@ -14,6 +15,11 @@ var roleHarvester = {
     costs: [200,350,550],
 
     create: function(spawn,flag) {
+        if (!!spawn.spawning){
+            // since it returns null otherwise
+            //skip this if the spawn is busy
+            return;
+        }
         memory={spawn:spawn.name,
                 home:spawn.room.name,
                 role: "harvester",
@@ -21,8 +27,7 @@ var roleHarvester = {
                 source:flag};
         var num= 1;
         var name= memory.role+num;
-        var body = parts[ costs.filter((c) => {return c<spawn.room.energyCapacityAvailable;}).indexOf(Math.max(...arr))];
-        
+        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
         while(spawn.canCreateCreep(body,name)=== ERR_NAME_EXISTS){
             num+=1;
             name= memory.role+num;
@@ -35,10 +40,10 @@ var roleHarvester = {
     },   
     run:function() {
         var creep= this.creep;
+
         // set up a road network  since the harvester should have a predictable path
         // need to ignore terrain due to this
         this.layroads();
-
         //determine which task the creep should be doing
                 //control what job the peasant does
         if((creep.memory.job == "harvesting")&&(this.creep.carry.energy == this.creep.carryCapacity) ){
@@ -74,6 +79,7 @@ var roleHarvester = {
         var creep= this.creep;
         var my_container=creep.room.lookForAt(LOOK_STRUCTURES,Game.flags[creep.memory.source]).filter((structure) =>{return structure.structureType ==STRUCTURE_CONTAINER;}) 
         if(!(my_container.length)){
+            // don't filter for containers in case there is a road, that way the road will get build and then the conatiner will too, I think..
             var site =creep.room.lookForAt(LOOK_CONSTRUCTION_SITES,Game.flags[creep.memory.source]);
             if(!(site.length)){
                 creep.room.createConstructionSite(Game.flags[creep.memory.source].pos,STRUCTURE_CONTAINER);

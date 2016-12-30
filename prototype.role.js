@@ -29,19 +29,25 @@ var role_proto={
     lastwill: function(){},
 
     layroads: function(){
+        var creep=this.creep;
         // check if the creep is on a road, and if not build one
-        var road =this.creep.pos.lookFor(LOOK_STRUCTURES,{
+        // only do so if there are less than 10 construction site present so that it doesn't turn into a shitshow again lol
+        var numContructionSites = creep.room.find(FIND_CONSTRUCTION_SITES).length;
+        if (numContructionSites<10){
+            var road =this.creep.pos.lookFor(LOOK_STRUCTURES,{
                             filter: (structure) => { return structure.structureType == STRUCTURE_ROAD; }} );
-        if (!road.length){
-            var found_site =this.creep.pos.lookFor(LOOK_CONSTRUCTION_SITES,{
-                            filter: (site) => { return site.structureType == STRUCTURE_ROAD; }} );
-            if(!found_site.length){
-                this.creep.pos.createConstructionSite(STRUCTURE_ROAD);
+
+            if (!road.length){
+                var found_site =creep.pos.lookFor(LOOK_CONSTRUCTION_SITES,{
+                                filter: (site) => { return site.structureType == STRUCTURE_ROAD; }} );
+                if(!found_site.length){
+                    creep.pos.createConstructionSite(STRUCTURE_ROAD);
+                }
             }
-        }
+        }   
     }
     
-}
+};
 
 
 

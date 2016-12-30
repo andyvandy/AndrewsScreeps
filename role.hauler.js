@@ -17,6 +17,11 @@ var roleHauler = {
 
     //TODO make the hauler size scale based off of path length not available energy capacity
     create: function(spawn,sourceflag,depositflag){
+        if (!!spawn.spawning){
+            // since it returns null otherwise
+            //skip this if the spawn is busy
+            return;
+        }
         memory={spawn:spawn.name,
                 home:spawn.room.name,
                 role: "hauler",
@@ -25,7 +30,7 @@ var roleHauler = {
                 deposit:depositflag};
         var num= 1;
         var name= memory.role+num;
-        var body = parts[ costs.filter((c) => {return c<spawn.room.energyCapacityAvailable;}).indexOf(Math.max(...arr))];
+        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
         
         while(spawn.canCreateCreep(body,name)=== ERR_NAME_EXISTS){
             num+=1;
