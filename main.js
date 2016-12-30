@@ -1,11 +1,17 @@
 var roomPopulator = require('room.populator');
-var taskMaster =require('task.master');
+var taskMaster = require('task.master');
 var towerController = require('tower.controller');
+var status = require('status');
 
 
 
 
 module.exports.loop = function () {
+
+    // print out a report periodically
+    if(Game.time % 50 === 1 ){
+        status.run()
+    }
 
     // handle memory
     // stolen from https://github.com/Kendalor/screeps/blob/master/default/main.js 
