@@ -26,7 +26,7 @@ var roomPopulator = {
 
         //determine whcih spawner to use TODO
         var spawn= Game.spawns.Spawn1;
-
+        var spawned= false; // use this to prevent multiple spawn orders
         
         if(Game.rooms[room_name].controller.level <3){
             var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' );
@@ -40,16 +40,17 @@ var roomPopulator = {
             var sourceflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED);}});
             for (var sourceflag in sourceflags){
                 var harvester = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && (c.memory.source ==sourceflags[sourceflag].name));
-                if (!harvester){
+                if (!harvester && !spawned){
                     roleHarvester.create(spawn,sourceflags[sourceflag].name);
+                    spawned=true;
                 }
             }
-
-            // TODO check which sources have space for peasants and harvesters
+            // the peasants will take from the containers
             var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' );
             //check the room controller level, if it is less than a set amount, build peasants
-            if (peasants <6 ){
+            if ((peasants <6) &&!spawned){
                 rolePeasant.create(Game.spawns.Spawn1);
+                spawned=true;
             }
         }
         else{
@@ -61,8 +62,9 @@ var roomPopulator = {
             // build allocators based on the number of extensions and age of youngest allocator
             // TODO implement more complicated logic
             var allocators = _.sum(Game.creeps, (c) => c.memory.role == 'allocator'&& c.memory.home ==room_name);
-            if(allocators<1) {
+            if((allocators<1 )&&!spawned) {
                 roleAllocator.create(spawn);
+                spawned=true;
             }
 
             // build haulers and harvesters
@@ -71,10 +73,11 @@ var roomPopulator = {
             for (var sourceflag in sourceflags){
                 var harvester = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && c.memory.source ==sourceflags[sourceflag].name);
                 var hauler = _.sum(Game.creeps, (c) => c.memory.role == 'hauler' && c.memory.source ==sourceflags[sourceflag].name);
-                if (!harverter){
+                if (!harverter && !spawned){
                     roleHarvester.create(spawn,sourceflags[sourceflag].name);
+                    spawned= true;
                 }
-                if (!hauler && storage.length){
+                if (!hauler && storage.length &&!spawned){
                     roleHauler.create(spawn,sourceflags[sourceflag].name,storageflags[0].name);
                 }
             }
@@ -83,15 +86,17 @@ var roomPopulator = {
             // build builders based on the number of construction sites
             var builders = _.sum(Game.creeps, (c) => c.memory.role == 'builder'&& c.memory.home ==room_name);
             var numContructionSites = _.sum(Game.rooms[room_name].find(FIND_CONSTUCTION_SITES));
-            if((10*builders)<numContructionSites) {
+            if(((10*builders)<numContructionSites) &&!spawned) {
                 roleBuilder.create(spawn);
+                spawned=true;
 
             }
 
             // build upgraders based on the amount of reserves present
             var upgraders = _.sum(Game.creeps, (c) => c.memory.role == 'upgrader'&& c.memory.home ==room_name);
-            if(upgraders<1) {
+            if((upgraders<1)&&!spawned) {
                 roleUpgrader.create(spawn , "placeholderTODO");
+                spawned=true;
             }
         }  
     }
