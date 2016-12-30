@@ -1,5 +1,6 @@
 var rolePeasant = require('role.peasant');
 var role_proto = require('prototype.role');
+var roomPopulator = require('room.populator');
 
 
 
@@ -20,9 +21,11 @@ module.exports.loop = function () {
     if(Game.time % 10 === 0 ){
         // run this every once in a while to save cpu
         //count the peasants, and build new ones as needed
-        var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' );
-        if (peasants <6 ){
-            rolePeasant.create(Game.spawns.Spawn1);
+        for( var room in Game.rooms){
+            try {roomPopulator.run(room);} catch(e){
+                console.log("Room populator error in room: "+room );
+                console.log(e);
+            };
         }
     }
 
