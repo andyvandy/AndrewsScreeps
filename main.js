@@ -1,4 +1,5 @@
 var roomPopulator = require('room.populator');
+var roomPlanner = require('room.planner');
 var taskMaster = require('task.master');
 var towerController = require('tower.controller');
 var status = require('status');
@@ -29,13 +30,23 @@ module.exports.loop = function () {
         towerController.run(tower);
     }
     
-    // spawn creeps
-    if(Game.time % 10 === 0 ){
+    // ----control rooms
+    //spawn creeps
+    if(Game.time % 3=== 0 ){
         // run this every once in a while to save cpu
         //count the peasants, and build new ones as needed
         for( var room in Game.rooms){
             try {roomPopulator.run(room);} catch(e){
                 console.log("Room populator error in room: "+room );
+                console.log(e);
+            };
+        }
+    }
+    // place buildings
+    if(Game.time % 50 === 5 ){
+        for( var room in Game.rooms){
+            try {roomPlanner.run(room);} catch(e){
+                console.log("Room planner error in room: "+room );
                 console.log(e);
             };
         }

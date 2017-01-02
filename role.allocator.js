@@ -15,10 +15,10 @@ var role_proto = require('prototype.role');
 var roleAllocator = {
     
     parts: [[CARRY,CARRY,MOVE],
-            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE]],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [150,450],
+    costs: [150,300],
 
     create: function(spawn){
         if (!!spawn.spawning){
@@ -35,7 +35,9 @@ var roleAllocator = {
 
 
         // if there are 0 creeps, build a cheap allocator so that we can rebuild
-        var numCreeps = _.sum(Game.creeps, (c) =>  c.memory.home ==room_name);
+        var numCreeps = _.sum(Game.creeps, (c) =>  c.memory.home ==memory.home);
+        //console.log(numCreeps); //TODO FIX
+
         if (numCreeps==0){
             var body=this.parts[0];
         }
@@ -55,6 +57,7 @@ var roleAllocator = {
     },
     run : function(){
         var creep = this.creep;
+        
         // crontroll what task the creep is assigned
         if((creep.memory.job =="allocating") && (creep.carry.energy == 0)) {
             creep.memory.job="fetching";
@@ -67,18 +70,18 @@ var roleAllocator = {
 
         //perform the assigned task
         if(creep.memory.job =="allocating"){
-            roleAllocator.allocate();
+            this.allocate();
         }
         else if(creep.memory.job =="fetching"){
-            roleAllocator.fetch();
+            this.retrieve();
         }
     },
-    fetch: function(){
+    retrieve: function(){
         var creep= this.creep;
 
         //check for storage
         var storage=creep.room.find(FIND_STRUCTURES,{
-                                    filter: (structure) =>{return (structure.structureType ==STRUCTURE_STORAGE) ;}});
+                                    filter: (structure) =>{return (structure.structureType ==STRUCTURE_STORAGE)&&(structure.store[RESOURCE_ENERGY] >100 );}});
         if(storage.length){
             if(creep.withdraw(storage[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(storage[0]);
@@ -88,7 +91,7 @@ var roleAllocator = {
             //otherwise look for containers
             var container=creep.pos.findClosestByRange(FIND_STRUCTURES,{
                                     filter: (structure) =>{return (structure.structureType ==STRUCTURE_CONTAINER)&&
-                                                    (structure.energy >100) ;}});
+                                                    (structure.store[RESOURCE_ENERGY] >100) ;}});
             if(container){
                 if(creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(container);
@@ -96,8 +99,9 @@ var roleAllocator = {
             }
         }
     },
-    allocate: function(){
 
+    allocate: function(){
+        var creep= this.creep;
         //Querry for all the possible things that could be filled
         var extension = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (structure) => {

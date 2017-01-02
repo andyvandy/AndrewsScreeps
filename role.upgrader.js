@@ -14,10 +14,11 @@ var role_proto = require('prototype.role');
 var roleUpgrader = {
     
     parts: [[WORK,WORK,CARRY,MOVE],
-            [WORK,WORK,WORK,CARRY,MOVE,MOVE]],
+            [WORK,WORK,WORK,CARRY,MOVE],
+            [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [300,450],
+    costs: [300,400,700],
 
     create: function(spawn,withdrawflag){
         if (!!spawn.spawning){
@@ -58,9 +59,9 @@ var roleUpgrader = {
 
         //perform the current task
         if(creep.memory.job=="fetching"){
-            roleUpgrader.fetch();
+            this.fetch();
         }else if(creep.memory.job=="upgrading"){
-            roleUpgrader.upgrade();
+            this.upgrade();
         }
     },
 

@@ -16,10 +16,11 @@ var role_proto = require('prototype.role');
 var roleBuilder = {
 
     parts: [[WORK,CARRY,MOVE],
-            [WORK,WORK,CARRY,CARRY,MOVE,MOVE]],
+            [WORK,WORK,CARRY,CARRY,MOVE,MOVE],
+            [WORK,WORK,CARRY,CARRY,MOVE,CARRY,CARRY,MOVE,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [200,400],
+    costs: [200,400,550],
 
     create: function(spawn){
         if (!!spawn.spawning){
@@ -62,10 +63,10 @@ var roleBuilder = {
 
         // perform the creep's assigned task
         if(creep.memory.job=="building"){
-            roleBuilder.build();
+            this.build();
         }
         else if(creep.memory.job=="fetching"){
-            roleBuilder.fetch();
+            this.fetch();
         }
 
     },

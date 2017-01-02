@@ -40,9 +40,6 @@ var rolePeasant = {
     },
     /** @param {Creep} creep **/
     run: function() {
-        // set up a road network asap
-        //this.layroads();
-
         var creep= this.creep;
         //control what job the peasant does
         if((creep.memory.job == "harvesting")&&(this.creep.carry.energy == this.creep.carryCapacity) ){
@@ -64,10 +61,9 @@ var rolePeasant = {
             
             var towers = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_TOWER) && structure.energy < 0.95*structure.energyCapacity;
+                    return (structure.structureType == STRUCTURE_TOWER) && structure.energy < 0.65*structure.energyCapacity;
                 }
             });
-
             // first check if the spawn is full?
             if(Game.spawns[creep.memory.spawn].energy < 300){
 
@@ -86,12 +82,12 @@ var rolePeasant = {
                 if(creep.build(construction_site) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(construction_site);
                 }
-            else if( (creep.memory.num %2 ==1 )&&(towers.length)) {
+            }else if( (creep.memory.num %2 ==1 )&&(towers.length)) {
                 if(creep.transfer(towers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(towers[0]);
                 }
             }  
-            }else{
+            else{
                 // if nothing to build and spawn is full, upgrade the controller
                 if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(creep.room.controller);
@@ -109,8 +105,7 @@ var rolePeasant = {
         var target = sources[creep.memory.num%2];
 
         // if there is a non-empty container nearby, draw from that rather than trying to mine
-        var container = target.pos.findInRange(FIND_STRUCTURES, 1, {filter : (s) =>{return (s.structureType== STRUCTURE_CONTAINER)&& (s.energy>100)  ;}} );
-
+        var container = target.pos.findInRange(FIND_STRUCTURES,1, {filter : (s) =>{return (s.structureType== STRUCTURE_CONTAINER)&& (s.store[RESOURCE_ENERGY]>100)  ;}} );
         if (container.length){
             if(creep.withdraw(container[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(container[0]);

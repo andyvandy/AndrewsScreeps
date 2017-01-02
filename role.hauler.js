@@ -45,6 +45,11 @@ var roleHauler = {
 
     run: function(){
         var creep = this.creep;
+
+        // set up a road network  since the hauler should have a predictable path
+        // need to ignore terrain due to this
+        this.layroads();
+
         if((creep.memory.job== "hauling" )&& (creep.carry.energy == 0)) {
             creep.memory.job = "fetching";
             creep.say('picking up');
@@ -55,10 +60,10 @@ var roleHauler = {
         }
 
         if(creep.memory.job== "hauling"){
-            roleHauler.hauling();
+            this.hauling();
         }
         else if(creep.memory.job== "fetching"){
-            roleHauler.fetching();
+            this.fetching();
         }
     },
 

@@ -46,6 +46,7 @@ var taskMaster = {
             var role = Object.create(role);
             //var job = Object.assign(role_proto,rolePeasant);
             //job.prototype=role_proto;
+            
             role.setCreep(creep);
             try { role.run(); } catch(e) { 
                 console.log(creep.memory.role+" role error: " + e);

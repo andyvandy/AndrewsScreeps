@@ -9,10 +9,11 @@ var roleHarvester = {
     
     parts: [[WORK,CARRY,MOVE],
             [WORK,WORK,CARRY,MOVE,MOVE],
-            [WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE]],
+            [WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE],
+            [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [200,350,550],
+    costs: [200,350,550,750],
 
     create: function(spawn,flag) {
         if (!!spawn.spawning){
