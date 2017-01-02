@@ -1,6 +1,11 @@
 /*
     The peasant is to be used for low room controller levels
 
+    the peasant has the following states:
+        -harvesting
+        -spendging
+        -upgrading
+
 */
 var role_proto = require('prototype.role');
 
@@ -46,52 +51,60 @@ var rolePeasant = {
             creep.memory.job = "spending";
             creep.say("Spending time!");
         }
-        else if((creep.memory.job == "spending")&&(this.creep.carry.energy == 0)){
+        else if((creep.memory.job != "harvesting")&&(this.creep.carry.energy == 0)){
             creep.memory.job = "harvesting";
             creep.say("Harvest time!");
         }
 
         if(creep.memory.job == "harvesting"){
-            this.harvest();
-            
-        }else{ // only other option is spending
-            var construction_site = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
-            var extension = creep.pos.findClosestByRange(FIND_STRUCTURES,{
-                                            filter: (structure) => {return ((structure.structureType== STRUCTURE_EXTENSION)&&(structure.energy <50)) ;} }  );
-            
-            var towers = creep.room.find(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_TOWER) && structure.energy < 0.65*structure.energyCapacity;
-                }
-            });
-            // first check if the spawn is full?
-            if(Game.spawns[creep.memory.spawn].energy < 300){
+            this.harvest();    
+        }else if(creep.memory.job == "spending"){ 
+            this.spend();
+        }else if(creep.memory.job == "upgrading"){ 
+            this.upgrade();
+        }
+    },
+    spend: function(){
 
-                if(creep.transfer(Game.spawns[creep.memory.spawn], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(Game.spawns[creep.memory.spawn]);
-                    }
-
-            }else if(extension){// then check the extensions
-                if(creep.transfer(extension, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(extension);
-                    }
+        var creep= this.creep;
+        var construction_site = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
+        var extension = creep.pos.findClosestByRange(FIND_STRUCTURES,{
+                                        filter: (structure) => {return ((structure.structureType== STRUCTURE_EXTENSION)&&(structure.energy <50)) ;} }  );
+        
+        var towers = creep.room.find(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_TOWER) && structure.energy < 0.65*structure.energyCapacity;
             }
-            else if( (creep.memory.num %2 ==0 )&&(construction_site) ){
-                //half will be builders
+        });
+        // first check if the spawn is full?
+        if(Game.spawns[creep.memory.spawn].energy < 300){
 
-                if(creep.build(construction_site) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(construction_site);
+            if(creep.transfer(Game.spawns[creep.memory.spawn], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(Game.spawns[creep.memory.spawn]);
                 }
-            }else if( (creep.memory.num %2 ==1 )&&(towers.length)) {
-                if(creep.transfer(towers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(towers[0]);
+
+        }else if(extension){// then check the extensions
+            if(creep.transfer(extension, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(extension);
                 }
-            }  
-            else{
-                // if nothing to build and spawn is full, upgrade the controller
-                if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(creep.room.controller);
-                }
+        }
+        else if( (creep.memory.num %2 ==0 )&&(construction_site) ){
+            //half will be builders
+
+            if(creep.build(construction_site) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(construction_site);
+            }
+        }else if( (creep.memory.num %2 ==1 )&&(towers.length)) {
+            if(creep.transfer(towers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(towers[0]);
+            }
+        }  
+        else{
+            // if nothing to build and spawn is full, upgrade the controller
+            // changing the job stops them from walking back halfway to fill the spawn lol
+            creep.memory.job = "upgrading"
+            if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(creep.room.controller);
             }
         }
     },
@@ -120,8 +133,12 @@ var rolePeasant = {
                 if (Memory.verbose){console.log("peasant harvesting error:" +result);}
             }
         }
-        
-
+    },
+    upgrade: function(){
+        var creep= this.creep;
+        if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(creep.room.controller);
+        }
     }    
 };
 

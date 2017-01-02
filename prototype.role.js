@@ -45,6 +45,15 @@ var role_proto={
                 }
             }
         }   
+    },
+
+    getOffEdge: function(){
+        // use this to stop creeps from dancing on the edge of a room
+        var creep=this.creep;
+        if(creep.pos.x==0){creep.move(RIGHT)}
+        if(creep.pos.x==49){creep.move(LEFT)}
+        if(creep.pos.y==0){creep.move(BOTTOM)}
+        if(creep.pos.y==49){creep.move(TOP)}
     }
     
 };

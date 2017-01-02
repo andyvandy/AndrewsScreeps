@@ -5,11 +5,19 @@ Note that the order in which the class is listed determines it's priority since 
 
     For level 3, phase in harvesters so that the haulers will have conainters ready for them, 
         also phase in upgraders so that that the harvesters' energy is not wasted
+    
+
+    SATELITE ROOMS:
+        -use a cyan flag with the room name
+        -place blue flags with the role_num_options in the satelite room
+
 
 TODO:
     -make the spawns multi roomed
     -implement a spawn queue
 */
+
+var role_proto = require('prototype.role');
 
 var rolePeasant = require('role.peasant');
 var roleHarvester = require('role.harvester');
@@ -30,14 +38,14 @@ var roomPopulator = {
         }
 
         // TODO set this up for multiple spawns
-        var spawn=_.filter(Game.spawns,(s) => {return s.room == parent;});
+        var spawn=_.filter(Game.spawns,(s) => {return s.pos.roomName == parent;})[0];
         var spawned= false; // use this to prevent multiple spawn orders
         
         if(Game.rooms[room_name].controller.level <3){
             var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' );
             //check the room controller level, if it is less than a set amount, build peasants
-            if (peasants <(Game.rooms[room_name].controller.level*5) ){
-                rolePeasant.create(Game.spawns.Spawn1);
+            if (peasants <(Game.rooms[room_name].controller.level*7) ){
+                rolePeasant.create(spawn);
             }
         }
         else if(Game.rooms[room_name].controller.level <4){
@@ -54,7 +62,7 @@ var roomPopulator = {
             var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' );
             //check the room controller level, if it is less than a set amount, build peasants
             if ((peasants <10) &&!spawned){
-                rolePeasant.create(Game.spawns.Spawn1);
+                rolePeasant.create(spawn);
                 spawned=true;
             }
         }
@@ -111,22 +119,75 @@ var roomPopulator = {
             //query for cyan flags
             var cyanFlags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_CYAN); }});
             
+             var spawned=false;
+
             // for each dependent room build their stuff
             for (var i in cyanFlags){
-                this.satelite(cyanFlags[i].name,room_name);
+                if (spawned){
+                    break;
+                }
+                spawned=this.satelite(cyanFlags[i].name,room_name);
             } 
         }
 
     },
     satelite: function(room_name,parent){
         // check the flags in the satelite room and spawn units accordingly.
+        var spawn=_.filter(Game.spawns,(s) => {return s.pos.roomName == parent;})[0];
+        var spawned=false;
 
         //query for blue flags
-        //var blueFlags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_BLUE); }});
         var blueFlags = _.filter(Game.flags, f => (f.pos.roomName ==room_name)&&(f.color ==COLOR_BLUE) );
-        console.log(blueFlags);
+        for (var i in blueFlags){
+            if(spawned){
+                continue;
+            }
 
-    }
+            var info= blueFlags[i].name.split("_");
+            var role= info[0];
+            var exists = _.filter(Game.creeps, (c)=> (c.memory.flag ==blueFlags[i].name) );
+            if (exists.length){
+                continue;
+            }
+            if(this.roleExists(role)){
+                role = this.getRole(role);
+            }
+            var role = Object.create(role);
+           
+            try {  role.create(spawn,info); } catch(e) { 
+                console.log(room_name+" satelite spawn error with role "+ info[0] +": " + e);
+            };
+            spawned =true;
+
+        }
+        if (spawned){
+            return true;
+        }
+        else{
+            return false
+        }
+
+    },
+
+    roleExists: function(role){
+        try
+        {
+            require("role." + role);
+            return true;
+        }
+        catch(e)
+        {
+            return false;
+        }
+    },
+
+    getRole: function(role){
+        if(!this.roleExists(role))
+            return false;
+        var roleObject = require("role." + role);
+        roleObject = Object.assign( role_proto,roleObject);
+        return roleObject;
+    },
 };
 
 

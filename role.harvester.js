@@ -66,15 +66,15 @@ var roleHarvester = {
     harvest : function(){
         var creep= this.creep;
         if( creep.pos.isEqualTo(Game.flags[creep.memory.source])){
-                    var source = creep.pos.findClosestByRange(FIND_SOURCES);
-                    result= creep.harvest(source);
-                    if (result!= OK){
-                        if (Memory.verbose){console.log("harvesting error:" +result);}
-                        
-                    }
-                }else{
-                    creep.moveTo(Game.flags[creep.memory.source]);
+            var source = creep.pos.findClosestByRange(FIND_SOURCES);
+            result= creep.harvest(source);
+            if (result!= OK){
+                if (Memory.verbose){console.log("harvesting error:" +result);} 
             }
+            else{
+                creep.moveTo(Game.flags[creep.memory.source]);
+            }
+        }
     },
     spend : function(){
         var creep= this.creep;
