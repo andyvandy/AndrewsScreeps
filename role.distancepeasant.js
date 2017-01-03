@@ -9,15 +9,17 @@
         -work: room name of source
         -source: flag of the source
         -flag: the name of the flag which spawned the creep so that duplicates aren't spawned , one flag per creep
+
+    TODO:
+        -make the distance peasant drop off at a storage if there is one? maybe a container?
 */
 var role_proto = require('prototype.role');
 
 var roleDistancePeasant = {
     
-    parts: [[WORK,CARRY,CARRY,CARRY,MOVE,MOVE],
-            [WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
-            [WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]],
-    costs: [350,550,800],
+    parts: [[WORK,CARRY,MOVE,MOVE],
+            [WORK,CARRY,CARRY,MOVE,MOVE,MOVE]],
+    costs: [200,350],
 
     create: function(spawn,info) {
         if (!!spawn.spawning){

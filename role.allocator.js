@@ -9,6 +9,7 @@
         -add behaviour for when there are no containers or storages
         -add behavious to stock up a container for upgraders
         -add behaviour to prioritize towers when they are below a certain threshold
+        -add rejuvenation
 */
 var role_proto = require('prototype.role');
 
