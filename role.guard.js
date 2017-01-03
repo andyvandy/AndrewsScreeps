@@ -18,7 +18,7 @@ var roleGuard = {
         if (!!spawn.spawning){
             // since it returns null otherwise
             //skip this if the spawn is busy
-            return;
+            return true;
         }
         memory={spawn:spawn.name,
                 home:spawn.room.name,
@@ -36,7 +36,9 @@ var roleGuard = {
         if(spawn.canCreateCreep(body,name) == OK){
             console.log("building a "+memory.role +" named " +name + " for room " + memory.home);
             spawn.createCreep(body, name,memory);
+            return true;
         }
+        return false;
     },   
 
     run:function(){
@@ -46,7 +48,8 @@ var roleGuard = {
         this.getOffEdge();
 
         var creep= this.creep;
-        if (!this.gotoroom(creep.memory.work)){
+        if (creep.memory.work!= creep.pos.roomName){
+            creep.moveTo(Game.flags[creep.memory.flag],{reusePath:50});
             return 0;
         }
         var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
@@ -69,7 +72,7 @@ var roleGuard = {
                 }
             }
             movement_result= creep.moveTo(closestHostile,{maxRooms:1});
-        }else if (Game.tick%3!=0){
+        }else if ((Game.time%3) !=0){
             // this is to make the guard kill creeps that are bouncing back and forth
             //TODO fix this
             creep.moveTo(Game.flags[creep.memory.flag]);

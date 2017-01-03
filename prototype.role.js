@@ -54,6 +54,16 @@ var role_proto={
         if(creep.pos.x==49){creep.move(LEFT)}
         if(creep.pos.y==0){creep.move(BOTTOM)}
         if(creep.pos.y==49){creep.move(TOP)}
+    },
+    gotoroom:function(room_name){
+        var creep= this.creep;
+        if (creep.room.name==room_name){
+            return true;
+        }
+        var exit_dir=Game.map.findExit(creep.room.name,room_name);
+        var exit= creep.pos.findClosestByRange(exit_dir);
+        creep.moveTo(exit);
+        return false;
     }
     
 };

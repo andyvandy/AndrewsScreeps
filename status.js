@@ -8,13 +8,17 @@ var status = {
     run:function(){
         var message ="";
         var header = "STATUS REPORT\n";
-
+        //report on bucket level
+        message += "BUCKET LEVEL: " +Game.cpu.bucket+"\n"; 
 
 
         message += header;
         for (room in Game.rooms){
-            message+= "-----------------\n";
-            message+=this.roomStatus(Game.rooms[room]);
+            if (Game.rooms[room].controller != undefined){
+                message+= "-----------------\n";
+                message+=this.roomStatus(Game.rooms[room]);
+            }
+            
         }
         console.log(message);
     },

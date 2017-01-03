@@ -10,6 +10,9 @@
         -source: flag of the source
         -flag: the name of the flag which spawned the creep so that duplicates aren't spawned , one flag per creep
 
+    The distance peasant's create function only returns true if the spawner is busy or a claimer is made.
+
+
     TODO:
         -make the distance peasant drop off at a storage if there is one? maybe a container?
 */
@@ -25,7 +28,7 @@ var roleDistancePeasant = {
         if (!!spawn.spawning){
             // since it returns null otherwise
             //skip this if the spawn is busy
-            return;
+            return true;
         }
         var source=info[2]; 
         memory={spawn:spawn.name,
@@ -47,7 +50,9 @@ var roleDistancePeasant = {
         if(spawn.canCreateCreep(body,name) == OK){
             console.log("building a "+memory.role +" named " +name + " for room " + memory.home);
             spawn.createCreep(body, name,memory);
+            return true;
         }
+        return false;
     },
     /** @param {Creep} creep **/
     run: function() {
@@ -102,18 +107,9 @@ var roleDistancePeasant = {
         if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
             creep.moveTo(creep.room.controller);
         }
-    },
-
-    gotoroom:function(room_name){
-        var creep= this.creep;
-        if (creep.room.name==room_name){
-            return true;
-        }
-        var exit_dir=Game.map.findExit(creep.room.name,room_name);
-        var exit= creep.pos.findClosestByRange(exit_dir);
-        creep.moveTo(exit);
-        return false;
     }
+
+    
 
 
 };

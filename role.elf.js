@@ -1,26 +1,29 @@
 /*
-    The Builder Takes energy from storage and builds, the builder is only spawned when there are contruction sites present
+    The elf is a house elf like in Harry Potter. It exists to do little mainteance task in satelite rooms
     
-    The Builder has two states: 
+    The elf has the following states: 
         -building : spending resources to build a consturction site
+        -idling: the creep has resources and is awaiting a job
         -fetching : getting resources from the an appropriate source
+        -fixing : repairing a structure
 
-    The Builder's memory has no flags
+    The elf's memory consits of the following:
+        -job: the elf's current job
+        -work: the room the elf lives in
+        -flag: the elf's unique identifier
     
     Notes:
-        -the builder does not repair so that I don't use this class as a crutch
+        -the elf should repair structures that are below 70% until they are 95% healed
+        - the elf prioritizes repairs over other jobs
 
 */
+
 var role_proto = require('prototype.role');
 
-var roleBuilder = {
+var roleElf = {
+    parts: [[WORK,CARRY,MOVE]],
 
-    parts: [[WORK,CARRY,MOVE],
-            [WORK,WORK,CARRY,CARRY,MOVE,MOVE],
-            [WORK,WORK,CARRY,CARRY,MOVE,CARRY,CARRY,MOVE,MOVE]],
-
-    // TODO make a helper function for finding the costs
-    costs: [200,400,550],
+    costs: [200],
 
     create: function(spawn){
         if (!!spawn.spawning){
@@ -30,7 +33,7 @@ var roleBuilder = {
         }
         memory={spawn:spawn.name,
                 home:spawn.room.name,
-                role: "builder",
+                role: "elf",
                 job:"fetching"};
         var num= 1;
         var name= memory.role+num;
@@ -43,7 +46,7 @@ var roleBuilder = {
         }
         memory.num=num;
         if(spawn.canCreateCreep(body,name) == OK){
-            console.log("building a "+memory.role +" named " +name + " for room " + memory.home);
+            console.log("building a "+memory.role +" named " +name +" in "+ memory.home+ " for room " + memory.work);
             spawn.createCreep(body, name,memory);
             return true;
         }
@@ -54,36 +57,32 @@ var roleBuilder = {
         var creep= this.creep;
 
         //determine the creep's task
-        if((creep.memory.job=="building") && creep.carry.energy == 0) {
+        if((creep.memory.job!="fetching") && creep.carry.energy == 0) {
             creep.memory.job="fetching";
-            creep.say('withdrawing');
+            creep.say('fetching');
         }
         if((creep.memory.job=="fetching") &&(   (creep.carry.energy == creep.carryCapacity)||(creep.carry.energy >=100)   )) {
-            creep.memory.job="building";
-            creep.say('building');
+            creep.memory.job="idling";
+            creep.say('awaiting task');
         }
 
         // perform the creep's assigned task
-        if(creep.memory.job=="building"){
-            this.build();
-        }
-        else if(creep.memory.job=="fetching"){
+        if(creep.memory.job=="fetching"){
             this.fetch();
+        }
+        else if(creep.memory.job=="idling"){
+            this.findWork();
         }
 
     },
-
     fetch: function(){
-        //the builder should scavenge loose energy off the ground
-        //the builder doesn't empty containers or storages
+        //the elf should scavenge loose energy off the ground
         var creep = this.creep;
-
 
         var money = creep.pos.findClosestByRange(FIND_DROPPED_ENERGY);
         var target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return ((structure.structureType == STRUCTURE_CONTAINER||
-                            structure.structureType == STRUCTURE_STORAGE) && 
+                    return ((structure.structureType == STRUCTURE_CONTAINER) && 
                             (structure.store[RESOURCE_ENERGY] > (0.01* structure.storeCapacity)));
                 }});
         if(money){
@@ -92,7 +91,7 @@ var roleBuilder = {
             if( result== ERR_NOT_IN_RANGE) {
                 creep.moveTo(money,{maxRooms:1});
             }else if(result!=OK){
-                console.log("builder pickup error: " +result); 
+                console.log("elf pickup error: " +result); 
             }
         }
         else if(target){
@@ -100,28 +99,17 @@ var roleBuilder = {
             if( result== ERR_NOT_IN_RANGE) {
                 creep.moveTo(target,{maxRooms:1});
             }else if(result!=OK){
-                console.log("builder withdraw error: " +result);
+                console.log("elf withdraw error: " +result);
             }
         }
     },
 
-    build: function(){
-        //just build the closest structure
+    idle:function(){
+        //find a task for the elf
         var creep = this.creep;
-
-        var target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
-        if(target) {
-            if(creep.build(target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target,{maxRooms:1});
-            }
-        }
-
     }
-
-
-
 
 
 };
 
-module.exports = roleBuilder;
+module.exports = roleElf;

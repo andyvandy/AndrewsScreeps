@@ -32,6 +32,11 @@ var roomPopulator = {
     run: function (room_name,parent){
         //control the creation of new creeps
 
+        //if the room is not mine, just pass
+        if(Game.rooms[room_name].controller===undefined){
+            return 1;
+        }
+
         // defaults to itself if not passed
         if (parent === undefined) {
             var parent = room_name;
@@ -154,10 +159,9 @@ var roomPopulator = {
             }
             var role = Object.create(role);
            
-            try {  role.create(spawn,info); } catch(e) { 
+            try {  spawned = role.create(spawn,info); } catch(e) { 
                 console.log(room_name+" satelite spawn error with role "+ info[0] +": " + e);
             };
-            spawned =true;
 
         }
         if (spawned){

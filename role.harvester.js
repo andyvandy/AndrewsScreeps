@@ -71,9 +71,9 @@ var roleHarvester = {
             if (result!= OK){
                 if (Memory.verbose){console.log("harvesting error:" +result);} 
             }
-            else{
-                creep.moveTo(Game.flags[creep.memory.source]);
-            }
+        }
+        else{
+            creep.moveTo(Game.flags[creep.memory.source]);
         }
     },
     spend : function(){

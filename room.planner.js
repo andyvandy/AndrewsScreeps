@@ -9,9 +9,13 @@ var roomPlanner = {
     legend : {"extension": STRUCTURE_EXTENSION,
              "container" :STRUCTURE_CONTAINER,
              "tower" : STRUCTURE_TOWER,
-             "storage" :STRUCTURE_STORAGE
+             "storage" :STRUCTURE_STORAGE,
+             "spawn" :STRUCTURE_SPAWN
         },
     run: function (room_name){
+        if(Game.rooms[room_name].controller===undefined){
+            return 1;
+        }
         // query for green flags
         var greenFlags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_GREEN); }});
 
