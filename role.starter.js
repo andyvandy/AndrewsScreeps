@@ -24,11 +24,12 @@
 var role_proto = require('prototype.role');
 
 var roleStarter = {
-    parts: [[WORK,WORK,CARRY,MOVE,MOVE]],
+    parts: [[WORK,WORK,CARRY,MOVE,MOVE],
+            [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE]],
 
-    costs: [200],
+    costs: [200,600],
 
-    create: function(spawn){
+    create: function(spawn,info){
         if (!!spawn.spawning){
             // since it returns null otherwise
             //skip creating this creep if the spawn is busy
@@ -98,6 +99,7 @@ var roleStarter = {
     },
     build : function(){
         // build the spawn
+        var creep= this.creep;
         var spawn = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {filter: (s)=>s.structureType==STRUCTURE_SPAWN });
         if (spawn){
             if (creep.build(spawn)== ERR_NOT_IN_RANGE){

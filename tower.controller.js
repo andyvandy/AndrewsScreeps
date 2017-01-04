@@ -3,7 +3,8 @@ var towerController = {
     /** @param {Tower} tower **/
     run: function(tower) {
         var intruder= tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        if(intruder){
+        var safeMode= (tower.room.controller.safeMode != undefined);
+        if(intruder && !safeMode){
             console.log("INTRUDER!!!");
             result= tower.attack(intruder);
             if (result!= OK){
@@ -16,15 +17,15 @@ var towerController = {
                         return  structure.hitsMax*0.9>=structure.hits && 
                                 (structure.structureType != STRUCTURE_WALL) &&
                                 (structure.structureType != STRUCTURE_CONTROLLER) &&
-                                 ((structure.structureType != STRUCTURE_RAMPART)|| (structure.hits < 20000)) ;
+                                 ((structure.structureType != STRUCTURE_RAMPART)|| (structure.hits < 2000)) ;
                     }
             }); 
             var wall = tower.pos.findClosestByRange(FIND_STRUCTURES, {
                     filter: (structure) => {
                         return  structure.hitsMax*0.9>=structure.hits && 
                                 (structure.structureType != STRUCTURE_CONTROLLER) &&
-                                ((structure.structureType != STRUCTURE_WALL)|| (structure.hits < 40)) &&
-                                 ((structure.structureType != STRUCTURE_RAMPART)|| (structure.hits < 200000)) ;
+                                ((structure.structureType != STRUCTURE_WALL)|| (structure.hits < 10000)) &&
+                                 ((structure.structureType != STRUCTURE_RAMPART)|| (structure.hits < 20000)) ;
                     }
             });        
             

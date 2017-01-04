@@ -8,10 +8,13 @@ var role_proto = require('prototype.role');
 
 var roleGuard = {
     
-    parts: [[TOUGH,TOUGH,ATTACK,MOVE,MOVE,MOVE]],
+    parts: [[TOUGH,TOUGH,ATTACK,MOVE,MOVE,MOVE],
+            [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK],
+            [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,HEAL],
+            [TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,HEAL]],
 
     // TODO make a helper function for finding the costs
-    costs: [250],
+    costs: [250,600,800,880],
 
 
     create: function(spawn,info) {
@@ -48,10 +51,6 @@ var roleGuard = {
         this.getOffEdge();
 
         var creep= this.creep;
-        if (creep.memory.work!= creep.pos.roomName){
-            creep.moveTo(Game.flags[creep.memory.flag],{reusePath:50});
-            return 0;
-        }
         var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         
         if(creep.getActiveBodyparts(HEAL) && (creep.hits<0.4*creep.hitsMax) ){
@@ -76,6 +75,10 @@ var roleGuard = {
             // this is to make the guard kill creeps that are bouncing back and forth
             //TODO fix this
             creep.moveTo(Game.flags[creep.memory.flag]);
+        }
+
+        if(!closestHostile &&(creep.getActiveBodyparts(HEAL) && (creep.hits<0.4*creep.hitsMax))){
+            creep.heal(creep);
         }
 
     }

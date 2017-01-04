@@ -53,7 +53,7 @@ var roomPopulator = {
                 rolePeasant.create(spawn);
             }
         }
-        else if(Game.rooms[room_name].controller.level <4){
+        else if(Game.rooms[room_name].controller.level <5){
             //otherwise if the rome controller is level 3
             var sourceflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED);}});
             for (var sourceflag in sourceflags){
@@ -160,7 +160,7 @@ var roomPopulator = {
             var role = Object.create(role);
            
             try {  spawned = role.create(spawn,info); } catch(e) { 
-                console.log(room_name+" satelite spawn error with role "+ info[0] +": " + e);
+                console.log(room_name+" satelite spawn error with role "+ info[0] +": " + e.stack);
             };
 
         }
@@ -181,6 +181,7 @@ var roomPopulator = {
         }
         catch(e)
         {
+            console.log("role exist error"+e);
             return false;
         }
     },
