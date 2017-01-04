@@ -35,6 +35,8 @@ var roomPopulator = {
         //if the room is not mine, just pass
         if(Game.rooms[room_name].controller===undefined){
             return 1;
+        }else if(!Game.rooms[room_name].controller.my){
+            return 1;
         }
 
         // defaults to itself if not passed
@@ -47,7 +49,7 @@ var roomPopulator = {
         var spawned= false; // use this to prevent multiple spawn orders
         
         if(Game.rooms[room_name].controller.level <3){
-            var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' );
+            var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' && c.memory.home == room_name);
             //check the room controller level, if it is less than a set amount, build peasants
             if (peasants <(Game.rooms[room_name].controller.level*7) ){
                 rolePeasant.create(spawn);

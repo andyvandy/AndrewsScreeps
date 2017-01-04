@@ -84,7 +84,7 @@ var roleStarter = {
         else if(creep.memory.job=="building"){
             this.build();
         }
-        else if(creep.memory.job=="upgrade"){
+        else if(creep.memory.job=="upgrading"){
             this.upgrade();
         }
     },
@@ -117,8 +117,12 @@ var roleStarter = {
         }
         if (creep.room.controller.level >1){
             //remove the flag if the creep's mission is accomplished
-            Game.flags[creep.memory.flag].remove();
-            console.log("mission accomplished for "+ creep.name);
+            if (Game.flags[creep.memory.flag] != undefined){
+                Game.flags[creep.memory.flag].remove();
+                console.log("mission accomplished for "+ creep.name);
+            }
+            
+            
         }
     }
 
