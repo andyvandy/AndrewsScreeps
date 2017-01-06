@@ -10,17 +10,18 @@ var roleHarvester = {
     parts: [[WORK,CARRY,MOVE],
             [WORK,WORK,CARRY,MOVE,MOVE],
             [WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE],
-            [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE]],
+            [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [200,350,550,750],
+    costs: [200,350,550,800],
 
-    create: function(spawn,flag) {
+    create: function(spawn,params) {
         if (!!spawn.spawning){
             // since it returns null otherwise
             //skip this if the spawn is busy
-            return;
+            return true;
         }
+        var flag = params.join("-");
         memory={spawn:spawn.name,
                 home:spawn.room.name,
                 role: "harvester",
@@ -37,7 +38,9 @@ var roleHarvester = {
         if(spawn.canCreateCreep(body,name) == OK){
             console.log("building a "+memory.role +" named " +name + " for room " + memory.home);
             spawn.createCreep(body, name,memory);
+            return true;
         }
+        return false;
     },   
     run:function() {
         var creep= this.creep;
@@ -77,6 +80,7 @@ var roleHarvester = {
         }
     },
     spend : function(){
+        //the harvester will drop energy if the container is full
         var creep= this.creep;
         var my_container=creep.room.lookForAt(LOOK_STRUCTURES,Game.flags[creep.memory.source]).filter((structure) =>{return structure.structureType ==STRUCTURE_CONTAINER;}) 
         if(!(my_container.length)){

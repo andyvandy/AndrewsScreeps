@@ -30,7 +30,7 @@ var roomPlanner = {
             }
         }
 
-        // iterate over the flags and try to built the desired structure, if successful delete the flag
+        // iterate over the flags and try to build the desired structure, if successful delete the flag
         for (var i in greenFlags){
             var location= greenFlags[i].pos;
             var structure= this.legend[greenFlags[i].name.split("-")[0]];

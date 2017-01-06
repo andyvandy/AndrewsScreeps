@@ -14,11 +14,11 @@ var role_proto = require('prototype.role');
 var roleUpgrader = {
     
     parts: [[WORK,WORK,CARRY,MOVE],
-            [WORK,WORK,WORK,CARRY,MOVE],
-            [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE]],
+            [WORK,WORK,WORK,CARRY,MOVE,MOVE]],
+            //[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [300,400,700],
+    costs: [300,450],//,700],
 
     create: function(spawn,withdrawflag){
         if (!!spawn.spawning){
@@ -48,6 +48,10 @@ var roleUpgrader = {
     run:function() {
         var creep= this.creep;
         //determine what task the creep should be doing
+
+        // the upgrader should lay roads
+        this.layroads();
+
         if((creep.memory.job=="upgrading") && (creep.carry.energy == 0)) {
             creep.memory.job="fetching";
             creep.say('picking up');

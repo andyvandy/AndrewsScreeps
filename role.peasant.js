@@ -18,7 +18,7 @@ var rolePeasant = {
         if (!!spawn.spawning){
             // since it returns null otherwise
             //skip this if the spawn is busy
-            return;
+            return true;
         }
         memory={spawn:spawn.name,
                 home:spawn.room.name,
@@ -41,7 +41,9 @@ var rolePeasant = {
         if(spawn.canCreateCreep(body,name) == OK){
             console.log("building a "+memory.role +" named " +name + " for room " + memory.home);
             spawn.createCreep(body, name,memory);
+            return true;
         }
+        return false;
     },
     /** @param {Creep} creep **/
     run: function() {

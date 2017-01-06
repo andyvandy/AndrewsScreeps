@@ -1,3 +1,10 @@
+/*
+
+        TODO
+            -Camel case all the functions ( and the calls to them)... woops
+*/
+
+
 var role_proto={
     // credit for setCreep to https://github.com/Garethp/Screeps/blob/master/role_prototype.js
 
@@ -26,7 +33,7 @@ var role_proto={
 
     action: function(){} ,
 
-    lastwill: function(){},
+    lastWill: function(){},
 
     layroads: function(){
         var creep=this.creep;

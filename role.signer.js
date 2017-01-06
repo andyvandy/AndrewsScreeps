@@ -1,46 +1,44 @@
 /*
-    The Claimer will be created with a room in mind to claim
-    HOWTO
-    place a blue flag in the room you want to claim, it will be removed once the room is claimed
-
-    The Claimer's memory :
-        -work: the room name of the room I want to claim
-        -flag : the creeps unique identifier
-
-    The claimer's create function only returns true if the spawner is busy or a claimer is made.
+    The signers's role is to go into a room and sign the controller with a designated message
     
+    The signer has no states: 
+        
+
+    The signer's memory consits of the following:
+        -work: the room the signer wishes to sign
+        -flag: the signer's unique identifier
+        -message: the signer's message
+    
+    HOWTO:
+        - place a blue flag in the room that says "signer_#_ROOM_message"
+        -the flag will be removed once the signer has completed their task
+
 */
+
 var role_proto = require('prototype.role');
 
-var roleClaimer = {
+var roleSigner = {
     
-    parts: [[MOVE,CLAIM]],
+    parts: [[MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [650],
+    costs: [50],
 
 
-    create: function(spawn,info) {
+    create: function(spawn,params) {
         if (!!spawn.spawning){
             // since it returns null otherwise
             //skip this if the spawn is busy
             return true;
         }
-        var flag = Game.flags[info.join("_")];
-        
-        //if I own the room, remove the flag
-        if (flag.room != undefined){
-            if(flag.room.controller.my){
-                flag.remove();
-                return false;
-            }
-        }
+        var flag = Game.flags[params.join("_")];
 
         memory={spawn:spawn.name,
                 home:spawn.room.name,
-                role: "claimer",
-                work:Game.flags[info.join("_")].pos.roomName,
-                flag:info.join("_")};
+                role: "signer",
+                work:Game.flags[params.join("_")].pos.roomName,
+                flag:params.join("_"),
+                message: params[3]};
         var num= 1;
         var name= memory.role+num;
         var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
@@ -58,6 +56,7 @@ var roleClaimer = {
     },   
 
     run:function(){
+        // the signer signs a room then removes the flag
         var creep= this.creep;
 
         this.getOffEdge();
@@ -67,11 +66,16 @@ var roleClaimer = {
             return 0;
         }
         var controller = creep.room.controller;
-        if(creep.claimController(controller) ==ERR_NOT_IN_RANGE){
+        if(creep.signController(controller,creep.memory.message) ==ERR_NOT_IN_RANGE){
                 creep.moveTo(controller);
+        }
+        if(controller.sign.text!= undefined){
+            Game.flags[creep.memory.flag].remove()
+            console.log("controller in room " +creep.memory.work+ " signed.");
+            creep.suicide();
         }
 
     }
 };
 
-module.exports=roleClaimer;
+module.exports=roleSigner;

@@ -1,10 +1,13 @@
-var roomPopulator = require('room.populator');
-var roomPlanner = require('room.planner');
+var roomBrains = require('room.brains');
 var taskMaster = require('task.master');
 var towerController = require('tower.controller');
 var status = require('status');
 
+/*
 
+    TODO:
+        -make the threshold for withdrawing from storage a Memory thing instead of being hardcoded into the roles
+*/
 
 
 module.exports.loop = function () {
@@ -31,25 +34,9 @@ module.exports.loop = function () {
     }
     
     // ----control rooms
-    //spawn creeps
-    if(Game.time % 3=== 0 ){
-        // run this every once in a while to save cpu
-        //count the peasants, and build new ones as needed
-        for( var room in Game.rooms){
-            try {roomPopulator.run(room);} catch(e){
-                console.log("Room populator error in room: "+room );
-                console.log(e);
-            };
-        }
-    }
-    // place buildings
-    if(Game.time % 50 === 5 ){
-        for( var room in Game.rooms){
-            try {roomPlanner.run(room);} catch(e){
-                console.log("Room planner error in room: "+room );
-                console.log(e);
-            };
-        }
+   
+    for( var room in Game.rooms){
+        roomBrains.run(room);
     }
 
     // make each creep perform their task

@@ -3,6 +3,9 @@
     The hauler has two states: 
         -hauling : bringing resources back the the deposit
         -fetching : getting resources from the assigned source
+
+    TODO:
+        -make the create function scale based on haluing distance
 */
 var role_proto = require('prototype.role');
 
@@ -16,18 +19,18 @@ var roleHauler = {
     costs: [150,300,600],
 
     //TODO make the hauler size scale based off of path length not available energy capacity
-    create: function(spawn,sourceflag,depositflag){
+    create: function(spawn,params){
         if (!!spawn.spawning){
             // since it returns null otherwise
             //skip this if the spawn is busy
-            return;
+            return true;
         }
         memory={spawn:spawn.name,
                 home:spawn.room.name,
                 role: "hauler",
                 job:"fetching",
-                source:sourceflag,
-                deposit:depositflag};
+                source:params[3],
+                deposit:params[4]};
         var num= 1;
         var name= memory.role+num;
         var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
@@ -40,7 +43,9 @@ var roleHauler = {
         if(spawn.canCreateCreep(body,name) == OK){
             console.log("building a "+memory.role +" named " +name + " for room " + memory.home);
             spawn.createCreep(body, name,memory);
+            return true;
         }
+        return false;
     },
 
     run: function(){
@@ -98,10 +103,12 @@ var roleHauler = {
                 creep.moveTo(targets[0]);
             }
         }
-        else{
-            // the container is in a different room
+        else if(!creep.pos.isNearTo(Game.flags[creep.memory.source])){
+            // the container is in a different room or not constructed
+            // do not step on it and block the source
             creep.moveTo(Game.flags[creep.memory.source]);
         }
+        
     }
 
 

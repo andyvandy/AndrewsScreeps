@@ -6,10 +6,11 @@ var role_proto = require('prototype.role');
 
 var roleDismantler = {
     
-    parts: [[WORK,WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,MOVE,MOVE]],
+    parts: [[WORK,WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,WORK,WORK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK]],
 
     // TODO make a helper function for finding the costs
-    costs: [750],
+    costs: [750,1050],
 
     create: function(spawn,info) {
         if (!!spawn.spawning){
@@ -46,7 +47,7 @@ var roleDismantler = {
                 return 0;
             }
             // check for hostiles in current room, engage them if there are
-            var enemy_tower = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES,{filter: (str) => str.structureType == STRUCTURE_TOWER});
+            var enemy_tower = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES,{filter: (str) => str.structureType == STRUCTURE_SPAWN});
             var closestStr = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES,{filter: (str) => (str.structureType != STRUCTURE_CONTROLLER) && (str.structureType != STRUCTURE_WALL) && (str.structureType == STRUCTURE_EXTENSION||str.structureType == STRUCTURE_STORAGE)});
 
             //var wall =Game.getObjectById("5843ee8b466ac8e20a8c2e31"); 

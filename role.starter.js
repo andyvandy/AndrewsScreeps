@@ -1,7 +1,7 @@
 /*
     The starter's role is to go into a room and build it's spawn and level up it's RCL to 2
     
-    The elf has the following states: 
+    The starter has the following states: 
         -building : spending resources to build a the spawn
         -fetching : getting resources from the an appropriate source
         -upgrading : upgrading the room controller

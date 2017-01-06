@@ -29,7 +29,7 @@ var roleBuilder = require('role.builder');
 
 
 var roomPopulator = {
-    run: function (room_name,parent){
+    run: function (room_name,phase){
         //control the creation of new creeps
 
         //if the room is not mine, just pass
@@ -39,89 +39,26 @@ var roomPopulator = {
             return 1;
         }
 
-        // defaults to itself if not passed
-        if (parent === undefined) {
-            var parent = room_name;
-        }
 
         // TODO set this up for multiple spawns
-        var spawn=_.filter(Game.spawns,(s) => {return s.pos.roomName == parent;})[0];
+        var spawn=_.filter(Game.spawns,(s) => {return s.pos.roomName == room_name;})[0];
         var spawned= false; // use this to prevent multiple spawn orders
         
-        if(Game.rooms[room_name].controller.level <3){
-            var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' && c.memory.home == room_name);
-            //check the room controller level, if it is less than a set amount, build peasants
-            if (peasants <(Game.rooms[room_name].controller.level*7) ){
-                rolePeasant.create(spawn);
-            }
+        if(phase==1){
+           spawned=this.phaseOne(room_name,spawn);
         }
-        else if(Game.rooms[room_name].controller.level <5){
-            //otherwise if the rome controller is level 3
-            var sourceflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED);}});
-            for (var sourceflag in sourceflags){
-                var harvester = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && (c.memory.source ==sourceflags[sourceflag].name));
-                if (!harvester && !spawned){
-                    roleHarvester.create(spawn,sourceflags[sourceflag].name);
-                    spawned=true;
-                }
-            }
-            // the peasants will take from the containers
-            var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' );
-            //check the room controller level, if it is less than a set amount, build peasants
-            if ((peasants <10) &&!spawned){
-                rolePeasant.create(spawn);
-                spawned=true;
-            }
+        else if(phase==2){
+            spawned=this.phaseTwo(room_name,spawn);
         }
-        else{
-            //otherwise if the rome controller is level 4 or higher
-            //query for relevant flags
-            var sourceflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED); }});
-            var storageflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_WHITE); }});
-            
-            // build allocators based on the number of extensions and age of youngest allocator
-            // TODO implement more complicated logic
-            var allocators = _.sum(Game.creeps, (c) => c.memory.role == 'allocator'&& c.memory.home ==room_name);
-            if((allocators<1 )&&!spawned) {
-                roleAllocator.create(spawn);
-                spawned=true;
-            }
-
-            // build haulers and harvesters
-            //check to see if there is a storage container available
-            var storage = Game.rooms[room_name].lookForAt(LOOK_STRUCTURES,storageflags[0]);
-            for (var sourceflag in sourceflags){
-                var harvester = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && c.memory.source ==sourceflags[sourceflag].name);
-                var hauler = _.sum(Game.creeps, (c) => c.memory.role == 'hauler' && c.memory.source ==sourceflags[sourceflag].name);
-                if (!harvester && !spawned){
-                    roleHarvester.create(spawn,sourceflags[sourceflag].name);
-                    spawned= true;
-                }
-                if (!hauler && storage.length &&!spawned){
-                    roleHauler.create(spawn,sourceflags[sourceflag].name,storageflags[0].name);
-                    spawned= true;
-                }
-            }
-            
-
-            // build builders based on the number of construction sites
-            var builders = _.sum(Game.creeps, (c) => c.memory.role == 'builder'&& c.memory.home ==room_name);
-            var numContructionSites = Game.rooms[room_name].find(FIND_CONSTRUCTION_SITES).length;
-            if(((10*builders)<numContructionSites) &&!spawned) {
-                roleBuilder.create(spawn);
-                spawned=true;
-
-            }
-
-            // build upgraders based on the amount of reserves present
-            var upgraders = _.sum(Game.creeps, (c) => c.memory.role == 'upgrader'&& c.memory.home ==room_name);
-            if((upgraders<2)&&!spawned) {
-                roleUpgrader.create(spawn , "placeholderTODO");
-                spawned=true;
-            }
+        else if(phase==3){
+            spawned=this.phaseThree(room_name,spawn);
         }  
 
-        // spawn creeps for satelite rooms
+        //spawn creeps that are flag designated for this room
+        spawned=this.satellite(room_name,room_name); // sneaky;)
+
+
+        // spawn creeps for satellite rooms
         if (!spawned){
             //query for cyan flags
             var cyanFlags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_CYAN); }});
@@ -133,12 +70,99 @@ var roomPopulator = {
                 if (spawned){
                     break;
                 }
-                spawned=this.satelite(cyanFlags[i].name,room_name);
+                if ((cyanFlags[i].secondaryColor == COLOR_RED) && (phase >2)){
+                    // a cyan/red flag indicates that this remote room should be mined
+                    // satelliteRemoteMine requires a storage so only phase 3 and up rooms will call this function
+                    spawned=this.satelliteRemoteMine(cyanFlags[i].name,room_name);
+                }
+                if (spawned){
+                    break;
+                }
+                spawned=this.satellite(cyanFlags[i].name,room_name);
             } 
         }
 
     },
-    satelite: function(room_name,parent){
+    phaseOne:function(room_name,spawn){
+        //this is the first phase of a room and only uses peasants
+        //TODO implement spawned in the peasant class
+        var spawned= false;
+        var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' && c.memory.home == room_name);
+        
+        if (peasants <(Game.rooms[room_name].controller.level*6) ){
+            rolePeasant.create(spawn);
+        }
+        return spawned;
+
+    },
+    phaseTwo:function(room_name,spawn){
+        //phase two phases in harvesters and some basic road construction, it's kind of efficient
+        var spawned = false
+        var sourceflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED);}});
+        for (var sourceflag in sourceflags){
+            var harvester = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && (c.memory.source ==sourceflags[sourceflag].name));
+            if (!harvester && !spawned){
+                spawned=roleHarvester.create(spawn,[sourceflags[sourceflag].name]);
+            }
+        }
+        // the peasants will take from the containers
+        var peasants = _.sum(Game.creeps, (c) => c.memory.role == 'peasant' && c.memory.home == room_name );
+        //check the room controller level, if it is less than a set amount, build peasants
+        if ((peasants <10) &&!spawned){
+            spawned=rolePeasant.create(spawn);
+        }
+        return spawned;
+    },
+    phaseThree:function(room_name,spawn){
+        //phase three introduces haulers builders and upgraders as well as more roads
+        var spawned= false;
+        //query for relevant flags
+        var sourceflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED); }});
+        var storageflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_WHITE); }});
+        
+        // build allocators based on the number of extensions and age of youngest allocator
+        // TODO implement more complicated logic
+        var allocators = _.sum(Game.creeps, (c) => c.memory.role == 'allocator'&& c.memory.home ==room_name);
+        if((allocators<1 )&&!spawned) {
+            roleAllocator.create(spawn);
+            spawned=true;
+        }
+
+        // build haulers and harvesters
+        //check to see if there is a storage container available
+        var storage = Game.rooms[room_name].lookForAt(LOOK_STRUCTURES,storageflags[0]);
+        for (var sourceflag in sourceflags){
+            // we don't count the number of haulers directly because then if I want an extra hauling job for a container it would ruin this
+            var harvester = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && c.memory.source ==sourceflags[sourceflag].name);
+            var hauler = _.sum(Game.creeps, (c) => c.memory.role == 'hauler' && c.memory.source ==sourceflags[sourceflag].name);
+            if (!harvester && !spawned){
+                spawned=roleHarvester.create(spawn,[sourceflags[sourceflag].name]);
+            }
+            if (!hauler && storage.length &&!spawned){
+                spawned=roleHauler.create(spawn,["hauler","blank","blank",sourceflags[sourceflag].name,storageflags[0].name]);
+            }
+        }
+        
+
+        // build builders based on the number of construction sites
+        var builders = _.sum(Game.creeps, (c) => c.memory.role == 'builder'&& c.memory.home ==room_name);
+        var numContructionSites = Game.rooms[room_name].find(FIND_CONSTRUCTION_SITES).length;
+        if(((10*builders)<numContructionSites) &&!spawned) {
+            roleBuilder.create(spawn);
+            spawned=true;
+
+        }
+
+        // build upgraders based on the amount of reserves present
+        var upgraders = _.sum(Game.creeps, (c) => c.memory.role == 'upgrader'&& c.memory.home ==room_name);
+        if((upgraders<1)&&!spawned) {
+            roleUpgrader.create(spawn , "placeholderTODO");
+            spawned=true;
+        }
+        return spawned;
+    },
+
+    satellite: function(room_name,parent){
         // check the flags in the satelite room and spawn units accordingly.
         var spawn=_.filter(Game.spawns,(s) => {return s.pos.roomName == parent;})[0];
         var spawned=false;
@@ -173,6 +197,30 @@ var roomPopulator = {
             return false
         }
 
+    },
+    satelliteRemoteMine:function(room_name,parent){
+        // check the red flags in the satelite room and spawn harvesters and haulers accordingly.
+        // need to have visibility of the room!!!
+        var spawn=_.filter(Game.spawns,(s) => {return s.pos.roomName == parent;})[0];
+        var spawned=false;
+
+        //storage flags are from the parent room while the source flags are from the satellite room
+        var sourceflags =  _.filter(Game.flags, f => (f.pos.roomName ==room_name)&&(f.color ==COLOR_RED) );
+        var storageflags = Game.rooms[parent].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_WHITE); }});
+
+
+        var storage = Game.rooms[parent].lookForAt(LOOK_STRUCTURES,storageflags[0]);
+        for (var sourceflag in sourceflags){
+            var harvester = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && c.memory.source ==sourceflags[sourceflag].name);
+            var hauler = _.sum(Game.creeps, (c) => c.memory.role == 'hauler' && c.memory.source ==sourceflags[sourceflag].name);
+            if (!harvester && !spawned){
+                spawned=roleHarvester.create(spawn,[sourceflags[sourceflag].name]);
+            }
+            if (!hauler && storage.length && !spawned){
+                spawned=roleHauler.create(spawn,["hauler","blank","blank",sourceflags[sourceflag].name,storageflags[0].name]);
+            }
+        }
+        return spawned;
     },
 
     roleExists: function(role){
