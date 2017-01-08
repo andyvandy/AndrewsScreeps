@@ -155,7 +155,7 @@ var roomPopulator = {
 
         // build upgraders based on the amount of reserves present
         var upgraders = _.sum(Game.creeps, (c) => c.memory.role == 'upgrader'&& c.memory.home ==room_name);
-        if((upgraders<1)&&!spawned) {
+        if((upgraders<2)&&!spawned) {
             roleUpgrader.create(spawn , "placeholderTODO");
             spawned=true;
         }

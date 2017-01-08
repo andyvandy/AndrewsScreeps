@@ -29,7 +29,7 @@ var roleStarter = {
 
     costs: [200,600],
 
-    create: function(spawn,info){
+    create: function(spawn,params){
         if (!!spawn.spawning){
             // since it returns null otherwise
             //skip creating this creep if the spawn is busy
@@ -39,12 +39,12 @@ var roleStarter = {
                 home:spawn.room.name,
                 role: "starter",
                 job:"fetching",
-                work:Game.flags[info.join("_")].pos.roomName,
-                flag:info.join("_")};
+                work:Game.flags[params.join("_")].pos.roomName,
+                flag:params.join("_")};
         var num= 1;
         var name= memory.role+num;
 
-        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
+        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<=spawn.room.energyCapacityAvailable);})))];
         
         while(spawn.canCreateCreep(body,name)=== ERR_NAME_EXISTS){
             num+=1;

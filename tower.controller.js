@@ -1,3 +1,8 @@
+/*
+    The towers will keep a reserve of 300 to only be used if under attack
+
+    The towers prioritize walls and ramparts differently than other buildings
+*/
 var towerController = {
 
     /** @param {Tower} tower **/
@@ -5,13 +10,17 @@ var towerController = {
         var intruder= tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         var safeMode= (tower.room.controller.safeMode != undefined);
         if(intruder && !safeMode){
-            console.log("INTRUDER!!!");
+            console.log("INTRUDER IN "+ tower.room.name+"!!!");
             result= tower.attack(intruder);
             if (result!= OK){
                 console.log("tower error: " + result);
             }
         }
         else if( tower.energy >300){
+            // basically so that the ramparts don't despawn
+            var lowRampart= tower.pos.findClosestByRange(FIND_STRUCTURES,{
+                filter: (s)=> (s.hits <1000) && (s.structureType == STRUCTURE_RAMPART)});
+            
             var target = tower.pos.findClosestByRange(FIND_STRUCTURES, {
                     filter: (structure) => {
                         return  structure.hitsMax*0.9>=structure.hits && 
@@ -29,7 +38,13 @@ var towerController = {
                     }
             });        
             
-            if(target) {
+            if(lowRampart){
+                result=tower.repair(lowRampart);
+                if(result != OK){
+                    console.log(result); // no clue when this would happen
+                    }
+            }
+            else if(target) {
                 result=tower.repair(target);
                 if(result != OK){
                     console.log(result); // no clue when this would happen

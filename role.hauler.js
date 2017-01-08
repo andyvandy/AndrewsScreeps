@@ -13,10 +13,12 @@ var roleHauler = {
     
     parts: [[CARRY,CARRY,MOVE],
             [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE],
-            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE]],
+            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [150,300,600],
+    costs: [150,300,600,1050,1500],
 
     //TODO make the hauler size scale based off of path length not available energy capacity
     create: function(spawn,params){
@@ -29,11 +31,12 @@ var roleHauler = {
                 home:spawn.room.name,
                 role: "hauler",
                 job:"fetching",
+                flag:params.join("_"),
                 source:params[3],
                 deposit:params[4]};
         var num= 1;
         var name= memory.role+num;
-        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
+        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<=spawn.room.energyCapacityAvailable);})))];
         
         while(spawn.canCreateCreep(body,name)=== ERR_NAME_EXISTS){
             num+=1;
@@ -96,7 +99,7 @@ var roleHauler = {
                 creep.moveTo(targets[0]);
             }
         }
-        var targets=creep.room.lookForAt(LOOK_STRUCTURES,Game.flags[creep.memory.source]).filter((structure) =>{return structure.structureType ==STRUCTURE_CONTAINER;});
+        var targets=creep.room.lookForAt(LOOK_STRUCTURES,Game.flags[creep.memory.source]).filter((structure) =>{return structure.structureType ==STRUCTURE_CONTAINER||structure.structureType ==STRUCTURE_STORAGE ;});
         if(targets[0]){
             result=creep.withdraw(targets[0], RESOURCE_ENERGY);
             if(result == ERR_NOT_IN_RANGE) {

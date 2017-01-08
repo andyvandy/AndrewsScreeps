@@ -25,7 +25,7 @@ var roleDismantler = {
                 flag:info.join("_")};
         var num= 1;
         var name= memory.role+num;
-        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
+        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<=spawn.room.energyCapacityAvailable);})))];
         while(spawn.canCreateCreep(body,name)=== ERR_NAME_EXISTS){
             num+=1;
             name= memory.role+num;

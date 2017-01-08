@@ -78,10 +78,20 @@ var roleElf = {
 
         // perform the creep's assigned task
         if(creep.memory.job=="fetching"){
+            creep.say(":scooter:");
             this.fetch();
         }
         else if(creep.memory.job=="idling"){
+            creep.say(":sleeping:");
             this.idle();
+        }
+        else if(creep.memory.job=="fixing"){
+            creep.say(":hammer:");
+            this.fix();
+        }
+        else if(creep.memory.job=="building"){
+            creep.say(":hammer_pick:");
+            this.build();
         }
 
     },
@@ -140,7 +150,7 @@ var roleElf = {
         if (fix_result==ERR_NOT_IN_RANGE){
             creep.moveTo(target,{maxRooms:1});
         }
-        else if(fix_result==ERR_INVALID_TARGET){
+        if(target.hits==target.hitsMax){
             //I'm assuming this is from the structure being full healed
             creep.memory.job="idling";
             // TODO check that it's fine that I leave the old target id, this is to save on cpu

@@ -90,7 +90,7 @@ var roleBuilder = {
             result= creep.pickup(money);
         
             if( result== ERR_NOT_IN_RANGE) {
-                creep.moveTo(money,{maxRooms:1});
+                creep.moveTo(money);
             }else if(result!=OK){
                 console.log("builder pickup error: " +result); 
             }
@@ -98,7 +98,7 @@ var roleBuilder = {
         else if(target){
             result= creep.withdraw(target, RESOURCE_ENERGY);
             if( result== ERR_NOT_IN_RANGE) {
-                creep.moveTo(target,{maxRooms:1});
+                creep.moveTo(target);
             }else if(result!=OK){
                 console.log("builder withdraw error: " +result);
             }
@@ -112,7 +112,7 @@ var roleBuilder = {
         var target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
         if(target) {
             if(creep.build(target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target,{maxRooms:1});
+                creep.moveTo(target);
             }
         }
 

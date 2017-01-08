@@ -96,7 +96,7 @@ var roleHarvester = {
             }
         }
         else{
-            if (my_container[0].hits<100000){
+            if (my_container[0].hits<150000){
                 //repair the container so it doesn't despawn
                 if(creep.repair(my_container[0])){
                     creep.moveTo(my_container[0]);

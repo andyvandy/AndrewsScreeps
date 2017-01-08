@@ -43,7 +43,7 @@ var roleAllocator = {
             var body=this.parts[0];
         }
         else{
-            var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
+            var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<=spawn.room.energyCapacityAvailable);})))];
         }
         
         while(spawn.canCreateCreep(body,name)=== ERR_NAME_EXISTS){
@@ -59,6 +59,7 @@ var roleAllocator = {
     run : function(){
         var creep = this.creep;
         
+        this.layroads();
         // crontroll what task the creep is assigned
         if((creep.memory.job =="allocating") && (creep.carry.energy == 0)) {
             creep.memory.job="fetching";

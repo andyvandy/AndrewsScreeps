@@ -14,11 +14,11 @@ var role_proto = require('prototype.role');
 var roleUpgrader = {
     
     parts: [[WORK,WORK,CARRY,MOVE],
-            [WORK,WORK,WORK,CARRY,MOVE,MOVE]],
-            //[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE]],
+            [WORK,WORK,WORK,CARRY,MOVE,MOVE],
+            [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [300,450],//,700],
+    costs: [300,450,800],
 
     create: function(spawn,withdrawflag){
         if (!!spawn.spawning){

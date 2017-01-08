@@ -1,13 +1,14 @@
 /*
-    The signers's role is to go into a room and sign the controller with a designated message
+    The scouts's role is to go into a flag and sit there for vision or to be annoying
     
-    The signer has no states: 
+    The scout has two states: 
+        -travelling: the scout is headed to the flag
+        -idle: the scout is on the flag
         
 
-    The signer's memory consits of the following:
-        -work: the room the signer wishes to sign
-        -flag: the signer's unique identifier
-        -message: the signer's message
+    The scout's memory consits of the following:
+        -work: the room the creep wishes to scout
+        -flag: the creep's unique identifier
     
     HOWTO:
         - place a blue flag in the room that says "signer_#_ROOM_message"
@@ -17,7 +18,7 @@
 
 var role_proto = require('prototype.role');
 
-var roleSigner = {
+var roleScout = {
     
     parts: [[MOVE]],
 
@@ -35,13 +36,13 @@ var roleSigner = {
 
         memory={spawn:spawn.name,
                 home:spawn.room.name,
-                role: "signer",
+                role: "scout",
+                job:"travelling",
                 work:Game.flags[params.join("_")].pos.roomName,
-                flag:params.join("_"),
-                message: params[3]};
+                flag:params.join("_")};
         var num= 1;
         var name= memory.role+num;
-        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<=spawn.room.energyCapacityAvailable);})))];
+        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
         while(spawn.canCreateCreep(body,name)=== ERR_NAME_EXISTS){
             num+=1;
             name= memory.role+num;
@@ -58,24 +59,30 @@ var roleSigner = {
     run:function(){
         // the signer signs a room then removes the flag
         var creep= this.creep;
-
+        if (creep.memory.job=="travelling"){
+            this.travel();
+        }else if(creep.memory.job=="idling"){
+            this.idle()
+        }
         this.getOffEdge();
+    },
 
+    travel:function(){
         var creep= this.creep;
         if (!this.gotoroom(creep.memory.work)){
             return 0;
         }
-        var controller = creep.room.controller;
-        if(creep.signController(controller,creep.memory.message) ==ERR_NOT_IN_RANGE){
-                creep.moveTo(controller);
+        if(creep.pos !=Game.flags[creep.memory.flag].pos){
+                creep.moveTo(Game.flags[creep.memory.flag]);
+        }else{
+            creep.memory.job="idling";
         }
-        if(controller.sign.text!= undefined){
-            Game.flags[creep.memory.flag].remove()
-            console.log("controller in room " +creep.memory.work+ " signed.");
-            creep.suicide();
-        }
-
+    },
+    idle:function(){
+        var creep= this.creep;
+        creep.say("error");
     }
+        
 };
 
-module.exports=roleSigner;
+module.exports=roleScout;
