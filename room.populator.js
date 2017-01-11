@@ -55,7 +55,9 @@ var roomPopulator = {
         }  
 
         //spawn creeps that are flag designated for this room
-        spawned=this.satellite(room_name,room_name); // sneaky;)
+        if (!spawned){
+            spawned=this.satellite(room_name,room_name); // sneaky;)
+        }
 
 
         // spawn creeps for satellite rooms
@@ -122,10 +124,11 @@ var roomPopulator = {
         
         // build allocators based on the number of extensions and age of youngest allocator
         // TODO implement more complicated logic
-        var allocators = _.sum(Game.creeps, (c) => c.memory.role == 'allocator'&& c.memory.home ==room_name);
-        if((allocators<1 )&&!spawned) {
-            roleAllocator.create(spawn);
-            spawned=true;
+        var allocators = _.sum(Game.creeps, (c) => (c.memory.role == 'allocator')&& (c.memory.home ==room_name));
+        
+        if((allocators<2 )&&!spawned) {
+            spawned= roleAllocator.create(spawn);
+            spawned= true;//TODO figure this out
         }
 
         // build haulers and harvesters

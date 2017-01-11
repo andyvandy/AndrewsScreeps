@@ -13,22 +13,30 @@ var status = {
 
 
         message += header;
-        for (room in Game.rooms){
-            if (Game.rooms[room].controller != undefined){
-                message+= "-----------------\n";
-                message+=this.roomStatus(Game.rooms[room]);
-            }
-            
+        for (room_name in Game.rooms){
+            message+=this.roomStatus(Game.rooms[room_name]);
         }
         console.log(message);
     },
     roomStatus : function(room){
-        var roomMessage="";
+        if (Game.rooms[room_name].controller === undefined ){
+            return "";
+        }
+        if (!Game.rooms[room_name].controller.my){
+            return "";
+        }
+
+        var roomMessage="-----------------\n";
         roomMessage += '<font color="cyan">Room: ' +room.name +'</font>\n';
         roomMessage += "Controller Level: " +room.controller.level +"\n";
         roomMessage += '<font color="yellow">Energy: ' +room.energyAvailable +"/"+ room.energyCapacityAvailable +'</font>\n';
+        var storage= room.find(FIND_STRUCTURES,{filter: (s)=> s.structureType==STRUCTURE_STORAGE});
+        if (storage.length){
+            roomMessage += '<font color="yellow">Storage energy: ' + storage[0].store[RESOURCE_ENERGY] +"\n";
+        }
         var numCreeps = _.sum(Game.creeps, (c) => c.memory.home  == room.name );
         roomMessage += "Creeps: " +numCreeps +"\n";
+
         return roomMessage;
     }
 };

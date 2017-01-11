@@ -1,6 +1,5 @@
 var roomBrains = require('room.brains');
 var taskMaster = require('task.master');
-var towerController = require('tower.controller');
 var status = require('status');
 
 /*
@@ -26,13 +25,6 @@ module.exports.loop = function () {
         }
     }
 
-    //Control my towers
-    var towers = _.filter(Game.structures, (s)=> s.structureType== STRUCTURE_TOWER);
-    for(var s in towers) {    
-        var tower= towers[s];
-        towerController.run(tower);
-    }
-    
     // ----control rooms
    
     for( var room in Game.rooms){

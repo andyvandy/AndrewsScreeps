@@ -22,7 +22,6 @@ var roleReserver = {
     costs: [1300],
 
     create:function(spawn,params){
-        console.log("test");
         if (!!spawn.spawning){
             // since it returns null otherwise
             //skip this if the spawn is busy
@@ -64,11 +63,9 @@ var roleReserver = {
 
         this.getOffEdge();
 
-        var creep= this.creep;
-        if (!this.gotoroom(creep.memory.work)){
-            return 0;
-        }
-        var controller = creep.room.controller;
+        //this is fine since we are assuming we have vision of the room
+        var controller = Game.flags[creep.memory.flag].room.controller;
+
         if(creep.reserveController(controller) ==ERR_NOT_IN_RANGE){
                 creep.moveTo(controller);
         }

@@ -8,13 +8,18 @@
 */
 var roomPopulator = require('room.populator');
 var roomPlanner = require('room.planner');
+var roomDefender = require('room.defender');
+var towerController = require('tower.controller');
 
 
 var roomBrains={
 
     setPhase:function(room_name){
         // determine the room's current phase
-
+        var room = Game.rooms[room_name];
+        if(room.controller===undefined){
+            return;
+        }
         // if no phase is currently set, set the room phase to 1
         if (Memory[room_name]===undefined){
             Memory[room_name]={};
@@ -23,7 +28,7 @@ var roomBrains={
             Memory[room_name].phase=1;
         }
 
-        var room = Game.rooms[room_name];
+        
         var hasStorage= room.find(FIND_STRUCTURES,{filter: (s)=> s.structureType==STRUCTURE_STORAGE}).length;
         if ((room.controller.level>3) && hasStorage &&(room.energyCapacityAvailable >900)){
             Memory[room_name].phase=3;
@@ -41,8 +46,26 @@ var roomBrains={
             this.setPhase(room_name);
         } 
 
+        //Control my towers
+        var towers = _.filter(Game.structures, (s)=> s.structureType== STRUCTURE_TOWER && s.room.name == room_name);
+        for(var s in towers) {    
+            var tower= towers[s];
+            towerController.run(tower);
+        }
+
+        //manage room defenses
+        if(Game.time %10=== 0 ){
+            // run this every once in a while to save cpu
+            try {roomDefender.run(room_name);} catch(e){
+                console.log("Room defender error in "+room_name+": "+e );
+            };  
+        }
+
+        //Control my links
+        try {this.links(room_name);} catch(e){};
+
         //spawn creeps
-        if(Game.time % 10=== 0 ){
+        if(Game.time %10=== 0 ){
             // run this every once in a while to save cpu
             try {roomPopulator.run(room_name,Memory[room_name].phase);} catch(e){
                 console.log("Room populator error in "+room_name+": "+e );
@@ -58,6 +81,33 @@ var roomBrains={
         }
         // manage defenses TODO
 
+    },
+
+    links:function(room_name){
+        //grey red for sources, grey blue for destinations
+        //TODO entirely revamp this
+
+        // exit if there are no links in the room TODO
+
+        var greyRedFlags= Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_GREY && f.secondaryColor ==COLOR_RED); }});
+        if (greyRedFlags.length){
+            var source_links = _.filter(greyRedFlags[0].pos.lookFor(LOOK_STRUCTURES), (s) => (s.structureType==STRUCTURE_LINK)&&(s.energy >0));
+        }
+        else{
+            return false;
+        }
+
+        var greyBlueFlags= Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_GREY && f.secondaryColor ==COLOR_BLUE); }});
+        if (greyBlueFlags.length){
+            var destination_links = _.filter(greyBlueFlags[0].pos.lookFor(LOOK_STRUCTURES), (s) => (s.structureType==STRUCTURE_LINK) && (s.energy < s.energyCapacity));
+        }
+        else{
+            return false;
+        }
+        if (source_links[0]===undefined){
+            return false;
+        }
+        source_links[0].transferEnergy(destination_links[0]);
     }
 
 };

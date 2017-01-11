@@ -4,10 +4,17 @@
         -hauling : bringing resources back the the deposit
         -fetching : getting resources from the assigned source
 
+    NOTES:
+        - the hauler body scales according to route length
     TODO:
-        -make the create function scale based on haluing distance
+        -improve the scaling based on hauling distance
+        -make haulers repair roads as they walk
+        -make haulers move in the same tick that they pickup
 */
 var role_proto = require('prototype.role');
+
+var utils = require('utils');
+
 
 var roleHauler = {
     
@@ -36,7 +43,10 @@ var roleHauler = {
                 deposit:params[4]};
         var num= 1;
         var name= memory.role+num;
-        var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<=spawn.room.energyCapacityAvailable);})))];
+        var body= this.assessRoute(memory.source,memory.deposit,spawn.room.energyCapacityAvailable);
+        if (!body){
+            body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<=spawn.room.energyCapacityAvailable);})))];
+        }
         
         while(spawn.canCreateCreep(body,name)=== ERR_NAME_EXISTS){
             num+=1;
@@ -49,6 +59,29 @@ var roleHauler = {
             return true;
         }
         return false;
+    },
+    assessRoute:function(source,deposit,capacity){
+        // determine how much hauling we need
+        // as a rule of thumb, haul 15 energy per tick so routeLength*2 *15 is how much capacity is needed 
+
+        //save the results to save cpu TODO
+        var distance = utils.globalDistance(Game.flags[source].pos, Game.flags[deposit].pos);
+        //console.log(distance);
+        //each section is one move and two carries
+        //use 20 since i'm using raw distance
+        var numSections= Math.ceil((distance*2 *30) /100);
+        //console.log(numSections);
+        //console.log("dist"+distance);
+
+        var body = _.fill(Array(numSections*2), CARRY).concat(_.fill(Array(numSections), MOVE)) ;
+        //console.log(body);
+        if (capacity> numSections*150){
+            return body;
+        }
+        else{
+            return false;
+        }
+        
     },
 
     run: function(){

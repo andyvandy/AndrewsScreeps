@@ -15,10 +15,13 @@ var roleUpgrader = {
     
     parts: [[WORK,WORK,CARRY,MOVE],
             [WORK,WORK,WORK,CARRY,MOVE,MOVE],
-            [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE]],
+            [WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE],
+            [WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE],
+            [WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [300,450,800],
+    costs: [300,450,800,1050,1200,1450],
 
     create: function(spawn,withdrawflag){
         if (!!spawn.spawning){
@@ -73,9 +76,13 @@ var roleUpgrader = {
         var creep= this.creep;
         var target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                         filter: (structure) => {
-                            return ((structure.structureType == STRUCTURE_CONTAINER||
-                                    structure.structureType == STRUCTURE_STORAGE) && 
-                                    (structure.store[RESOURCE_ENERGY] > (0.01* structure.storeCapacity)));
+                            return (
+                                    (structure.structureType == STRUCTURE_CONTAINER||
+                                    structure.structureType == STRUCTURE_STORAGE && 
+                                    structure.store[RESOURCE_ENERGY] > (0.01* structure.storeCapacity)
+                                    )||
+                                    (structure.structureType == STRUCTURE_LINK && structure.energy>0) 
+                                    );
                         }});
         if(target){
             if(creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {

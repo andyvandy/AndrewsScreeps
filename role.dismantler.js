@@ -51,7 +51,7 @@ var roleDismantler = {
             var closestStr = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES,{filter: (str) => (str.structureType != STRUCTURE_CONTROLLER) && (str.structureType != STRUCTURE_WALL) && (str.structureType == STRUCTURE_EXTENSION||str.structureType == STRUCTURE_STORAGE)});
 
             //var wall =Game.getObjectById("5843ee8b466ac8e20a8c2e31"); 
-            var wall= creep.room.lookForAt(LOOK_STRUCTURES, Game.flags[creep.memory.flag].pos);
+            /*var wall= creep.room.lookForAt(LOOK_STRUCTURES, Game.flags[creep.memory.flag].pos);
             
             if(wall.length){
                 wall=wall[0];
@@ -63,17 +63,14 @@ var roleDismantler = {
                     console.log("dismantler error " +dis_result);
                 }
             }
-            else if(enemy_tower){
+            else*/ if(enemy_tower){
                 if(creep.dismantle(enemy_tower) == ERR_NOT_IN_RANGE){
-                    movement_result= creep.moveTo(enemy_tower);
+                    movement_result= creep.moveTo(enemy_tower,{ignoreDestructables: true});
                     if (movement_result == -2){// no path available, destroy the flagged wall
-                        //var target_breach = _.filter( Game.flags , (f) => (f.room.name==creep.room.name)&& (f.color == COLOR_GREEN));
-                        
-
-                        }
-                        
-
+                        var breach = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES);
+                        creep.dismantle(breach);
                     }
+                }
             }
             else if(closestStr){
                 if(creep.dismantle(closestStr) == ERR_NOT_IN_RANGE){

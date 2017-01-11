@@ -10,7 +10,8 @@ var roomPlanner = {
              "container" :STRUCTURE_CONTAINER,
              "tower" : STRUCTURE_TOWER,
              "storage" :STRUCTURE_STORAGE,
-             "spawn" :STRUCTURE_SPAWN
+             "spawn" :STRUCTURE_SPAWN,
+             "link" :STRUCTURE_LINK
         },
     run: function (room_name){
         if(Game.rooms[room_name].controller===undefined){

@@ -23,9 +23,10 @@ var role_proto = require('prototype.role');
 
 var roleElf = {
     parts: [[WORK,CARRY,MOVE],
-            [WORK,WORK,CARRY,CARRY,MOVE,MOVE]],
+            [WORK,WORK,CARRY,CARRY,MOVE,MOVE],
+            [WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE]],
 
-    costs: [200,400],
+    costs: [200,400,550],
 
     create: function(spawn,params){
         if (!!spawn.spawning){

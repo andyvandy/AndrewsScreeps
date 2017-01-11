@@ -2,6 +2,9 @@
     The towers will keep a reserve of 300 to only be used if under attack
 
     The towers prioritize walls and ramparts differently than other buildings
+
+    TODO:
+        make the towers have different health quotas at different phases
 */
 var towerController = {
 
@@ -33,8 +36,8 @@ var towerController = {
                     filter: (structure) => {
                         return  structure.hitsMax*0.9>=structure.hits && 
                                 (structure.structureType != STRUCTURE_CONTROLLER) &&
-                                ((structure.structureType != STRUCTURE_WALL)|| (structure.hits < 10000)) &&
-                                 ((structure.structureType != STRUCTURE_RAMPART)|| (structure.hits < 20000)) ;
+                                ((structure.structureType != STRUCTURE_WALL)|| (structure.hits < 100000)) &&
+                                 ((structure.structureType != STRUCTURE_RAMPART)|| (structure.hits < 100000)) ;
                     }
             });        
             
