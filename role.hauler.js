@@ -6,10 +6,12 @@
 
     NOTES:
         - the hauler body scales according to route length
+        - remote room haulers have a work part to maintain roads
+        - haulers move in the same tick that they pickup
+
     TODO:
         -improve the scaling based on hauling distance
-        -make haulers repair roads as they walk
-        -make haulers move in the same tick that they pickup
+        -make haulers handle minerals
 */
 var role_proto = require('prototype.role');
 
@@ -74,7 +76,12 @@ var roleHauler = {
         //console.log("dist"+distance);
 
         var body = _.fill(Array(numSections*2), CARRY).concat(_.fill(Array(numSections), MOVE)) ;
-        //console.log(body);
+
+        //if the source and deposit are in diffrent rooms, add a work part so that the hauler can maintain the roads
+        if (Game.flags[source].pos.roomName!=Game.flags[deposit].pos.roomName){
+            body.concat([WORK,MOVE,CARRY]);
+        }
+
         if (capacity> numSections*150){
             return body;
         }
@@ -88,8 +95,10 @@ var roleHauler = {
         var creep = this.creep;
 
         // set up a road network  since the hauler should have a predictable path
+        //also maintain the road network to remove the need for a helper creep
         // need to ignore terrain due to this
         this.layroads();
+        this.maintain();
 
         if((creep.memory.job== "hauling" )&& (creep.carry.energy == 0)) {
             creep.memory.job = "fetching";
@@ -101,14 +110,14 @@ var roleHauler = {
         }
 
         if(creep.memory.job== "hauling"){
-            this.hauling();
+            this.haul();
         }
         else if(creep.memory.job== "fetching"){
             this.fetching();
         }
     },
 
-    hauling: function(){
+    haul: function(){
         var creep = this.creep;
         var targets=creep.room.lookForAt(LOOK_STRUCTURES,Game.flags[creep.memory.deposit]).filter(
                                     (structure) =>{return (structure.structureType ==STRUCTURE_CONTAINER) ||
@@ -124,6 +133,7 @@ var roleHauler = {
     },
 
     fetching: function(){
+        //the hauler goes to its designated resource collection point and collects energy
         var creep = this.creep;
         var targets=creep.room.lookForAt(LOOK_RESOURCES,Game.flags[creep.memory.source]);
         if (targets.length){
@@ -137,16 +147,39 @@ var roleHauler = {
             result=creep.withdraw(targets[0], RESOURCE_ENERGY);
             if(result == ERR_NOT_IN_RANGE) {
                 creep.moveTo(targets[0]);
+            }else if(result == OK && creep.carry.energy == creep.carryCapacity){
+                this.haul();
             }
         }
         else if(!creep.pos.isNearTo(Game.flags[creep.memory.source])){
             // the container is in a different room or not constructed
             // do not step on it and block the source
             creep.moveTo(Game.flags[creep.memory.source]);
+        }  
+    },
+    maintain: function(){
+        // the hauler will maintain the roads that they use as they walk
+        //we don't check wheter they have energy or not since that doesn't really change anything right?
+        var creep = this.creep;
+        if (!creep.getActiveBodyparts(WORK)){
+            // the creep must have a work body part to continue
+            return;
         }
-        
-    }
+        var potHole =this.creep.pos.lookFor(LOOK_STRUCTURES,{
+                            filter: (s) => { return s.structureType == STRUCTURE_ROAD && s.hits < s.hitsMax ; }} );
+        if (potHole.length){
+            // since lookFor returns a list
+            creep.repair(potHole[0]);
+            return;// so that we don't look for other stuff and can save a tiny bit of cpu
+        }
 
+        var constructionSites = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES);
+        if (constructionSites){
+            creep.build(constructionSites[0]);
+        }
+
+
+    }   
 
 };
 

@@ -21,10 +21,11 @@ var roleAllocator = {
     
     parts: [[CARRY,CARRY,MOVE],
             [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE],
-            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE]],
+            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [150,300,600],
+    costs: [150,300,600,900],
 
     create: function(spawn){
         if (!!spawn.spawning){
@@ -87,7 +88,7 @@ var roleAllocator = {
         // make sure there is an allocator for the next generation lol
         if(creep.ticksToLive<200){
             var numAllocators = _.sum(Game.creeps, (c) =>  c.memory.home ==creep.memory.home &&c.memory.role == "allocator");
-            if (numAllocators<2){
+            if (numAllocators<3){
                 roleAllocator.create(Game.spawns[creep.memory.spawn]);
             }
         }

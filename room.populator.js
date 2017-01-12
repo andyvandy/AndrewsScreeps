@@ -158,7 +158,17 @@ var roomPopulator = {
 
         // build upgraders based on the amount of reserves present
         var upgraders = _.sum(Game.creeps, (c) => c.memory.role == 'upgrader'&& c.memory.home ==room_name);
-        if((upgraders<2)&&!spawned) {
+        var storedEnergy= Game.rooms[room_name].find(FIND_STRUCTURES, {filter: (s)=> s.structureType==STRUCTURE_STORAGE})[0].store[RESOURCE_ENERGY];
+        if (storedEnergy>750000){
+            var additionalUpgraders=2;
+        }
+        else if (storedEnergy>500000){
+            var additionalUpgraders=1;
+        }
+        else{
+            var additionalUpgraders=0;
+        }
+        if((upgraders<(2+additionalUpgraders))&&!spawned) {
             roleUpgrader.create(spawn , "placeholderTODO");
             spawned=true;
         }

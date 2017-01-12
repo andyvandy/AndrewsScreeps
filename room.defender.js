@@ -16,6 +16,7 @@ This class handles defenses for rooms and remote mining operations
         -blue flags which do not have a fourth argument specifying that they are military creeps will be turned purple until the end of the threat
 
     TODO:
+        -create
         -implement tick counting
         -add multiple threat levels and responses
         -add safemode to the max threat level
@@ -39,7 +40,9 @@ var roomDefender = {
         var numHostiles = room.find(FIND_HOSTILE_CREEPS).length;
         if(numHostiles>2){
             Memory[room_name].defense.defcon=2;
-        }else if (numHostiles>2){
+        }else if (numHostiles>0){
+            Memory[room_name].defense.defcon=1;
+        }else{
             Memory[room_name].defense.defcon=0;
         }
     },
@@ -92,11 +95,14 @@ var roomDefender = {
         //response to a defcon 1 threat
         console.log("Defcon 1 event in room " +room_name);
 
+        // place a defender flag
+
     },
     defcon2:function(room_name){
         //response to a defcon 2 threat
         console.log("Defcon 2 event in room " +room_name);
 
+        //place a squad flag
     },
 
 

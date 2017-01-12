@@ -2,9 +2,11 @@
     The towers will keep a reserve of 300 to only be used if under attack
 
     The towers prioritize walls and ramparts differently than other buildings
-
+    
+    NOTES:
+        - towers will only expand walls if they have 600 energy or more so that they don't let ramparts die
     TODO:
-        make the towers have different health quotas at different phases
+        - make the towers have different health quotas at different phases
 */
 var towerController = {
 
@@ -53,7 +55,7 @@ var towerController = {
                     console.log(result); // no clue when this would happen
                     }
             }
-            else if(wall){
+            else if(wall&& tower.energy >600){
                 result=tower.repair(wall);
                 if(result != OK){
                     console.log(result); 
