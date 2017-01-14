@@ -50,11 +50,11 @@ var roleHarvester = {
         this.layroads();
         //determine which task the creep should be doing
                 //control what job the peasant does
-        if((creep.memory.job == "harvesting")&&(this.creep.carry.energy == this.creep.carryCapacity) ){
+        if((creep.memory.job == "harvesting")&&(_.sum(this.creep.carry)== this.creep.carryCapacity) ){
             creep.memory.job = "spending";
             creep.say("Spending time!");
         }
-        else if((creep.memory.job == "spending")&&(this.creep.carry.energy == 0)){
+        else if((creep.memory.job == "spending")&&(_.sum(this.creep.carry) == 0)){
             creep.memory.job = "harvesting";
             creep.say("Harvest time!");
         }
@@ -71,9 +71,9 @@ var roleHarvester = {
         var creep= this.creep;
         if( creep.pos.isEqualTo(Game.flags[creep.memory.source])){
             var source = creep.pos.findClosestByRange(FIND_SOURCES);
-            var minerals = creep.pos.findInRange(FIND_MINERALS);
+            var minerals = creep.pos.findInRange(FIND_MINERALS,1);
             if (minerals.length){
-                creep.harvest(mineral[0]);
+                result= creep.harvest(minerals[0]);
                 return;
             }
             result= creep.harvest(source);
@@ -94,33 +94,56 @@ var roleHarvester = {
             var site =creep.room.lookForAt(LOOK_CONSTRUCTION_SITES,Game.flags[creep.memory.source]);
             if(!(site.length)){
                 creep.room.createConstructionSite(Game.flags[creep.memory.source].pos,STRUCTURE_CONTAINER);
-            }else{
+            }else if( creep.carry[RESOURCE_ENERGY]>0){
                 var result= creep.build(site[0]);
                 if(result != OK){
                      if (Memory.verbose){console.log(result);}
                 }
+            }else if(_.sum(creep.carry) >0){
+                // the creep has a non empty backpack but nor energy (so it has minerals)
+                this.dropAll();
+
             }
+
         }
         else{
-            if (my_container[0].hits<150000){
+            if (my_container[0].hits<150000 && creep.carry[RESOURCE_ENERGY]>0){
                 //repair the container so it doesn't despawn
                 if(creep.repair(my_container[0])){
                     creep.moveTo(my_container[0]);
                 }
-
             }else{
-                var result= creep.transfer(my_container[0], RESOURCE_ENERGY)
-                if(result == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(my_container[0]);
-                }else if(result!= OK){
-                    if (Memory.verbose){
-                        console.log("transfering error " +result);
-                        console.log(my_container);
-                    }
-                    if(result== ERR_FULL){
-                        creep.drop(RESOURCE_ENERGY);
+                var backpack = creep.carry;
+                for (var resource in backpack){
+                    //iterate over all of the possible resources , TODO make this more efficient?
+                    if (backpack[resource]>0){
+                        //I assume that this only procs once since the harvester should only have one type of resource
+                        var result= creep.transfer(my_container[0], resource)
+                        if(result == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(my_container[0]);
+                        }else if(result!= OK){
+                            if (Memory.verbose){
+                                console.log("transfering error " +result);
+                                console.log(my_container);
+                            }
+                            if(result== ERR_FULL){
+                                this.dropAll();
+                            }
+                        }
                     }
                 }
+               
+            }
+        }
+    },
+    dropAll: function(){
+        // drop everything the creep is holding
+        var creep= this.creep;
+        var backpack = creep.carry;
+        for (var resource in backpack){
+            //iterate over all of the possible resources , TODO make this more efficient?
+            if (backpack[resource]>0){
+                creep.drop(resource);
             }
         }
     }

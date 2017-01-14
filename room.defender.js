@@ -107,7 +107,7 @@ var roomDefender = {
         //response to a defcon 1 threat
         console.log("Defcon 1 event in room " +room_name);
         Memory[room_name].defense.lastAttack= Game.time;
-        var room = Game.rooms[rooom_name];
+        var room = Game.rooms[room_name];
         if (room.controller.reservation != undefined){
             // assuming we will have vision if this function is called, right? right.
             this.defcon1Remote(room_name);
@@ -118,7 +118,7 @@ var roomDefender = {
     },
     defcon1Remote:function(room_name){
         // deactivate civilians, the guard should hadle the rest
-        if(Memory[room_name].defense.civiliansActive===true){
+        if(Memory[room_name].defense.civiliansActive!=false){
             Memory[room_name].defense.civiliansActive=false;
             this.deactivateCivilians(room_name);
         }
@@ -137,7 +137,7 @@ var roomDefender = {
     },
     defcon2Remote:function(room_name){
         // TODO differentiate this function for level 1
-        if(Memory[room_name].defense.civiliansActive===true){
+        if(Memory[room_name].defense.civiliansActive!=false){
             Memory[room_name].defense.civiliansActive=false;
             this.deactivateCivilians(room_name);
         }

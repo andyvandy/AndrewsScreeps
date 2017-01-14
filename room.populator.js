@@ -6,6 +6,7 @@ Note that the order in which the class is listed determines it's priority since 
     For level 3, phase in harvesters so that the haulers will have conainters ready for them, 
         also phase in upgraders so that that the harvesters' energy is not wasted
     
+    Phase 4 incorporates mineral harvesters
 
     SATELITE ROOMS:
         -use a cyan flag with the room name
@@ -56,7 +57,10 @@ var roomPopulator = {
         }
         else if(phase==3){
             spawned=this.phaseThree(room_name,spawn);
-        }  
+        }
+        else if(phase==4){
+            spawned=this.phaseFour(room_name,spawn);
+        }
 
         //spawn creeps that are flag designated for this room
         if (!spawned){
@@ -104,7 +108,7 @@ var roomPopulator = {
     phaseTwo:function(room_name,spawn){
         //phase two phases in harvesters and some basic road construction, it's kind of efficient
         var spawned = false
-        var sourceflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED);}});
+        var sourceflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED && f.secondaryColor == COLOR_RED);}});
         for (var sourceflag in sourceflags){
             var harvester = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && (c.memory.source ==sourceflags[sourceflag].name));
             if (!harvester && !spawned){
@@ -123,8 +127,8 @@ var roomPopulator = {
         //phase three introduces haulers builders and upgraders as well as more roads
         var spawned= false;
         //query for relevant flags
-        var sourceflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED); }});
-        var storageflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_WHITE); }});
+        var sourceflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED && f.secondaryColor == COLOR_RED); }});
+        var storageflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_WHITE&& f.secondaryColor == COLOR_WHITE); }});
         
         // build allocators based on the number of extensions and age of youngest allocator
         // TODO implement more complicated logic
@@ -164,17 +168,44 @@ var roomPopulator = {
         var upgraders = _.sum(Game.creeps, (c) => c.memory.role == 'upgrader'&& c.memory.home ==room_name);
         var storedEnergy= Game.rooms[room_name].find(FIND_STRUCTURES, {filter: (s)=> s.structureType==STRUCTURE_STORAGE})[0].store[RESOURCE_ENERGY];
         if (storedEnergy>750000){
-            var additionalUpgraders=2;
+            var additionalUpgraders=3;
         }
         else if (storedEnergy>500000){
-            var additionalUpgraders=1;
+            var additionalUpgraders=2;
         }
-        else{
+        else if (storedEnergy>250000){
+            var additionalUpgraders=1;
+        }else{
             var additionalUpgraders=0;
         }
-        if((upgraders<(2+additionalUpgraders))&&!spawned) {
+        if((upgraders<(1+additionalUpgraders))&&!spawned) {
             roleUpgrader.create(spawn , "placeholderTODO");
             spawned=true;
+        }
+        return spawned;
+    },
+
+    phaseFour:function(room_name,spawn){
+        // phase 4 builds off of phase three but introduces extractors
+        var spawned= false;
+        spawned= this.phaseThree(room_name,spawn);
+
+        //query red/yellow flags which mark a mineral site
+        var mineralflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_RED && f.secondaryColor == COLOR_YELLOW); }});
+        var storageflags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_WHITE&& f.secondaryColor == COLOR_WHITE); }});
+
+        var storage = Game.rooms[room_name].lookForAt(LOOK_STRUCTURES,storageflags[0]);
+
+        for (var mineralflag in mineralflags){
+            // we don't count the number of haulers directly because then if I want an extra hauling job for a container it would ruin this
+            var harvester = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && c.memory.source ==mineralflags[mineralflag].name);
+            var hauler = _.sum(Game.creeps, (c) => c.memory.role == 'hauler' && c.memory.source ==mineralflags[mineralflag].name);
+            if (!harvester && !spawned){
+                spawned=roleHarvester.create(spawn,[mineralflags[mineralflag].name]);
+            }
+            if (!hauler && storage.length &&!spawned){
+                spawned=roleHauler.create(spawn,["hauler","blank","blank",mineralflags[mineralflag].name,storageflags[0].name]);
+            }
         }
         return spawned;
     },

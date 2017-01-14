@@ -100,11 +100,11 @@ var roleHauler = {
         this.layroads();
         this.maintain();
 
-        if((creep.memory.job== "hauling" )&& (creep.carry.energy == 0)) {
+        if((creep.memory.job== "hauling" )&& (_.sum(creep.carry) == 0)) {
             creep.memory.job = "fetching";
             creep.say('picking up');
         }
-        if((creep.memory.job== "fetching") && (creep.carry.energy == creep.carryCapacity)) {
+        if((creep.memory.job== "fetching") && ( _.sum(creep.carry) == creep.carryCapacity)) {
             creep.memory.job = "hauling";
             creep.say('hauling');
         }
@@ -128,7 +128,7 @@ var roleHauler = {
                 for (var resource in backpack){
                     //iterate over all of the possible resources , TODO make this more efficient?
                     if (backpack[resource]>0){
-                        if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        if(creep.transfer(targets[0], resource) == ERR_NOT_IN_RANGE) {
                             creep.moveTo(targets[0]);
                         }
                     }
@@ -144,17 +144,31 @@ var roleHauler = {
         var creep = this.creep;
         var targets=creep.room.lookForAt(LOOK_RESOURCES,Game.flags[creep.memory.source]);
         if (targets.length){
-            result=creep.pickup(targets[0]);
+            var result=creep.pickup(targets[0]);
             if(result == ERR_NOT_IN_RANGE) {
                 creep.moveTo(targets[0]);
             }
         }
         var targets=creep.room.lookForAt(LOOK_STRUCTURES,Game.flags[creep.memory.source]).filter((structure) =>{return structure.structureType ==STRUCTURE_CONTAINER||structure.structureType ==STRUCTURE_STORAGE ;});
+        
+
         if(targets[0]){
-            result=creep.withdraw(targets[0], RESOURCE_ENERGY);
-            if(result == ERR_NOT_IN_RANGE) {
+            // if there is energy, assume that that's what should be hauled, otherwise look for a mineral
+            var withdrawResult; //initializing the variable to prevent errors if the container is empty
+            if (targets[0].store[RESOURCE_ENERGY]>0){
+                withdrawResult=creep.withdraw(targets[0], RESOURCE_ENERGY);
+            }else{
+                for (var resource in targets[0].store){
+                    if (targets[0].store[resource]>0){
+                        //this should only realistically occur for one resource unless the main stoarage is out of energy which is another problem entirely
+                        withdrawResult=creep.withdraw(targets[0], resource);
+                    }
+                }
+            }
+            
+            if(withdrawResult == ERR_NOT_IN_RANGE) {
                 creep.moveTo(targets[0]);
-            }else if(result == OK && creep.carry.energy == creep.carryCapacity){
+            }else if(withdrawResult == OK && _.sum(creep.carry) == creep.carryCapacity){
                 this.haul();
             }
         }

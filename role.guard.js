@@ -35,7 +35,7 @@ var roleGuard = {
                 flag:params.join("_")};
 
         if (Memory[memory.work].defense.lastAttack!= undefined){
-            if ((Game.time -Memory[room_name].defense.lastAttack)<4000 ){
+            if ((Game.time -Memory[memory.home].defense.lastAttack)<4000 && Memory[memory.home].defense.defcon==0 ){
                 console.log("too soon since last attack!");
                 return false;
             }

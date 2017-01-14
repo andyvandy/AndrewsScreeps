@@ -30,7 +30,11 @@ var roomBrains={
 
         
         var hasStorage= room.find(FIND_STRUCTURES,{filter: (s)=> s.structureType==STRUCTURE_STORAGE}).length;
-        if ((room.controller.level>3) && hasStorage &&(room.energyCapacityAvailable >900)){
+        var hasExtractor= room.find(FIND_STRUCTURES,{filter: (s)=> s.structureType==STRUCTURE_EXTRACTOR}).length;
+        if ((room.controller.level>5) && hasExtractor){
+             Memory[room_name].phase=4;
+        }
+        else if ((room.controller.level>3) && hasStorage &&(room.energyCapacityAvailable >900)){
             Memory[room_name].phase=3;
         }else if(room.controller.level>2) {
             Memory[room_name].phase=2;
@@ -115,5 +119,3 @@ var roomBrains={
 
 
 module.exports = roomBrains;
-
-
