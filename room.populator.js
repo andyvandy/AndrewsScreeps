@@ -42,6 +42,10 @@ var roomPopulator = {
 
         // TODO set this up for multiple spawns
         var spawn=_.filter(Game.spawns,(s) => {return s.pos.roomName == room_name;})[0];
+        if (spawn===undefined){
+            // this is the case for a freshly claimed room
+            return; 
+        }
         var spawned= false; // use this to prevent multiple spawn orders
         
         if(phase==1){
@@ -260,3 +264,5 @@ var roomPopulator = {
 
 
 module.exports = roomPopulator;
+
+

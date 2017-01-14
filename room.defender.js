@@ -60,6 +60,8 @@ var roomDefender = {
         }
         else if (Memory[room_name].defense.defcon==1){
             this.defcon1(room_name);
+        }else if(Memory[room_name].defense.defcon==0){
+            this.defcon0(room_name);
         }
 
 
@@ -70,7 +72,7 @@ var roomDefender = {
         var blueFlags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_BLUE); }});
         // iterate over the flags and turn the civilian flags purple
         for (var i in blueFlags){
-            var params = blueFlags[i].split("_");
+            var params = blueFlags[i].name.split("_");
             // the fourth param indicates wheter or not a creep is military
             if (params[3] !="military"){
                 blueFlags[i].setColor(COLOR_PURPLE);
@@ -83,7 +85,7 @@ var roomDefender = {
         var purpleFlags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_PURPLE); }});
         // iterate over the flags and turn the civilian flags blue
         for (var i in purpleFlags){
-            var params = purpleFlags[i].split("_");
+            var params = purpleFlags[i].name.split("_");
             // the fourth param indicates wheter or not a creep is military
             if (params[3] !="military"){
                 purpleFlags[i].setColor(COLOR_BLUE);
@@ -91,19 +93,55 @@ var roomDefender = {
         }
     },
 
+    defcon0:function(room_name){
+        // this is a peace time function
+
+        // if civilians are inactive, activate them
+        if(Memory[room_name].defense.civiliansActive===false){
+            Memory[room_name].defense.civiliansActive=true;
+            this.activateCivilians(room_name);// the reason for the if statement is so that we aren't calling this too often
+        }
+    },
+
     defcon1:function(room_name){
         //response to a defcon 1 threat
         console.log("Defcon 1 event in room " +room_name);
+        Memory[room_name].defense.lastAttack= Game.time;
+        var room = Game.rooms[rooom_name];
+        if (room.controller.reservation != undefined){
+            // assuming we will have vision if this function is called, right? right.
+            this.defcon1Remote(room_name);
+        }
 
         // place a defender flag
 
     },
+    defcon1Remote:function(room_name){
+        // deactivate civilians, the guard should hadle the rest
+        if(Memory[room_name].defense.civiliansActive===true){
+            Memory[room_name].defense.civiliansActive=false;
+            this.deactivateCivilians(room_name);
+        }
+    },
     defcon2:function(room_name){
         //response to a defcon 2 threat
         console.log("Defcon 2 event in room " +room_name);
+        Memory[room_name].defense.lastAttack= Game.time;
+        var room = Game.rooms[room_name];
+        if (room.controller.reservation != undefined){
+            // assuming we will have vision if this function is called, right? right.
+            this.defcon1Remote(room_name);
+        }
 
         //place a squad flag
     },
+    defcon2Remote:function(room_name){
+        // TODO differentiate this function for level 1
+        if(Memory[room_name].defense.civiliansActive===true){
+            Memory[room_name].defense.civiliansActive=false;
+            this.deactivateCivilians(room_name);
+        }
+    }
 
 
 };

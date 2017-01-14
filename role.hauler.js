@@ -79,7 +79,7 @@ var roleHauler = {
 
         //if the source and deposit are in diffrent rooms, add a work part so that the hauler can maintain the roads
         if (Game.flags[source].pos.roomName!=Game.flags[deposit].pos.roomName){
-            body.concat([WORK,MOVE,CARRY]);
+            body= body.concat([WORK,MOVE,CARRY]);
         }
 
         if (capacity> numSections*150){
@@ -118,13 +118,20 @@ var roleHauler = {
     },
 
     haul: function(){
+        // the hauler goes to their designated dropoff and unloads all of their resources
         var creep = this.creep;
         var targets=creep.room.lookForAt(LOOK_STRUCTURES,Game.flags[creep.memory.deposit]).filter(
                                     (structure) =>{return (structure.structureType ==STRUCTURE_CONTAINER) ||
                                                             (structure.structureType ==STRUCTURE_STORAGE) ;});
             if(targets[0]){
-                if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(targets[0]);
+                var backpack = creep.carry;
+                for (var resource in backpack){
+                    //iterate over all of the possible resources , TODO make this more efficient?
+                    if (backpack[resource]>0){
+                        if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(targets[0]);
+                        }
+                    }
                 }
             }else{
                 //hauler is in a different room

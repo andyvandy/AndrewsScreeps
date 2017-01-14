@@ -1,7 +1,11 @@
 /*
     The Guard will be created with a flag for where to station itself
+    The guard is primarily menat to deal with NPCs
+
     The Guard's memory :
         -flag: unique identifier and location of where to guard
+    Notes:
+        - the guard will only spawn after there hasn't been an attack for some time ( it assumes a harvest rate of 20 energy/tick)
     
 */
 var role_proto = require('prototype.role');
@@ -29,6 +33,14 @@ var roleGuard = {
                 role: "guard",
                 work:Game.flags[params.join("_")].pos.roomName,
                 flag:params.join("_")};
+
+        if (Memory[memory.work].defense.lastAttack!= undefined){
+            if ((Game.time -Memory[room_name].defense.lastAttack)<4000 ){
+                console.log("too soon since last attack!");
+                return false;
+            }
+        }
+
         var num= 1;
         var name= memory.role+num;
         var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<=spawn.room.energyCapacityAvailable);})))];

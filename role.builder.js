@@ -17,10 +17,11 @@ var roleBuilder = {
 
     parts: [[WORK,CARRY,MOVE],
             [WORK,WORK,CARRY,CARRY,MOVE,MOVE],
-            [WORK,WORK,CARRY,CARRY,MOVE,CARRY,CARRY,MOVE,MOVE]],
+            [WORK,WORK,CARRY,CARRY,MOVE,CARRY,CARRY,MOVE,MOVE],
+            [WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [200,400,550],
+    costs: [200,400,550,800],
 
     create: function(spawn){
         if (!!spawn.spawning){

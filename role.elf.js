@@ -79,11 +79,11 @@ var roleElf = {
 
         // perform the creep's assigned task
         if(creep.memory.job=="fetching"){
-            creep.say(":scooter:");
+            creep.say(":Scooter:");
             this.fetch();
         }
         else if(creep.memory.job=="idling"){
-            creep.say(":sleeping:");
+            creep.say("\u1F62A';");
             this.idle();
         }
         else if(creep.memory.job=="fixing"){

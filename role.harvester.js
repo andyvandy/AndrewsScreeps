@@ -67,9 +67,15 @@ var roleHarvester = {
         }
     },
     harvest : function(){
+        // TODO : if there are minerals within range, the creep will mine those instead of any source, theis is an issue if there are minerals next to a source
         var creep= this.creep;
         if( creep.pos.isEqualTo(Game.flags[creep.memory.source])){
             var source = creep.pos.findClosestByRange(FIND_SOURCES);
+            var minerals = creep.pos.findInRange(FIND_MINERALS);
+            if (minerals.length){
+                creep.harvest(mineral[0]);
+                return;
+            }
             result= creep.harvest(source);
             if (result!= OK){
                 if (Memory.verbose){console.log("harvesting error:" +result);} 
