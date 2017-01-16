@@ -13,7 +13,7 @@ var status = require('status');
 module.exports.loop = function () {
 
     // print out a report periodically
-    if(Game.time % 50 === 1 ){
+    if(Game.time % 50 ===5 ){
         status.run()
     }
 

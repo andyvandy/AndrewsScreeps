@@ -32,19 +32,22 @@ var squadController = {
 
 		// check to see if the whole squad is at the checkpoint
 		var squadSize= _.filter(Game.flags, (f) => (f.color ==COLOR_BROWN)&&(f.secondaryColor ==COLOR_BLUE)&&(f.name.split("_")[0]== squad_name) ).length;
-		var squadAtCheckpoint= _.filter(Game.creeps, (c) =>  (c.memory.squad == squad_name) && (c.memory.checkpoint == Memory[squad_name].checkpoint)&&  (c.memory.job == "idling")); 
-		
+		var squadAtCheckpoint= _.filter(Game.creeps, (c) =>  (c.memory.squad == squad_name) &&   (c.memory.job == "idling")); 
+
 		if (squadSize== squadAtCheckpoint.length){
 			// send the creeps off to the next checkpoint
-			for (var creep in squadAtCheckpoint){
-				creep.memory.checkpoint+=1;
-				creep.memory.job= "deploying" ;
+			for (var i in squadAtCheckpoint){
+				squadAtCheckpoint[i].memory.checkpoint+=1;
+				squadAtCheckpoint[i].memory.job= "deploying" ;
 			}
 		}
 	},
 	muster:function(squad_name){
 		// spawn the creeps that need to be spawned
 		var spawnFlag= _.filter(Game.flags, (f) => (f.color ==COLOR_BROWN)&&(f.secondaryColor ==COLOR_PURPLE)&&(f.name.split("_")[0]== squad_name) );
+		if (!spawnFlag.length){
+			return;
+		}
 		var spawnRooms = _.drop(spawnFlag[0].name.split("_"),1 ); // drop the element that is the squad's name
 		for (let i in spawnRooms){
 			var spawn=_.filter(Game.spawns,(s) => {return s.pos.roomName == spawnRooms[i];})[0];

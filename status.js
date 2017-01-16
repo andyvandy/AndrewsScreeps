@@ -13,16 +13,19 @@ var status = {
 
 
         message += header;
-        for (room_name in Game.rooms){
+        for (let room_name in Game.rooms){
             message+=this.roomStatus(Game.rooms[room_name]);
         }
         console.log(message);
     },
     roomStatus : function(room){
-        if (Game.rooms[room_name].controller === undefined ){
+        if(room.name=== undefined){
+            return ""; // this is for when im simulating
+        }
+        if (room.controller === undefined ){
             return "";
         }
-        if (!Game.rooms[room_name].controller.my){
+        if (!room.controller.my){
             return "";
         }
 

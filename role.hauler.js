@@ -11,7 +11,7 @@
 
     TODO:
         -improve the scaling based on hauling distance
-        -make haulers handle minerals
+        -make hauler not pickup for trip that they'll die on, especially for minerals
 */
 var role_proto = require('prototype.role');
 
@@ -86,7 +86,7 @@ var roleHauler = {
             return body;
         }
         else{
-            numSections= (capacity-200)/150; 
+            numSections= Math.floor((capacity-200)/150); 
             body= _.fill(Array(numSections*2), CARRY).concat(_.fill(Array(numSections), MOVE)) ;
             if (Game.flags[source].pos.roomName!=Game.flags[deposit].pos.roomName){
                 body= body.concat([WORK,MOVE,CARRY]);

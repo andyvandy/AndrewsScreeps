@@ -224,14 +224,16 @@ var roleAllocator = {
                                      (s)=> s.structureType == STRUCTURE_CONTAINER ||
                                       s.structureType == STRUCTURE_STORAGE||
                                       s.structureType == STRUCTURE_TERMINAL);
-
+            if (!sourceStructure.length || !depositStructure.length ){
+                continue;
+            }
             if (depositStructure[0].store[resource] >threshold ){
                 // only fill upto the threshold
-                return;
+                continue;
             }
             if (sourceStructure[0].store[resource] <creep.carryCapacity|| sourceStructure[0].store[resource] ===undefined ){
                 // do not take on a delivery when there is not enough to deliver
-                return;
+                continue;
             }
             console.log(sourceStructure[0].store[resource]);
             creep.memory.specialDelivery=true;

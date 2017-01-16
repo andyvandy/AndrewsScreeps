@@ -6,10 +6,12 @@ var role_proto = require('prototype.role');
 
 var roleBarbarian = {
     
-    parts: [[TOUGH,TOUGH,TOUGH,ATTACK,MOVE,MOVE,MOVE,MOVE]],
+    parts: [[TOUGH,TOUGH,TOUGH,ATTACK,MOVE,MOVE,MOVE,MOVE],
+            [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK],
+            [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK]],
 
     // TODO make a helper function for finding the costs
-    costs: [310],
+    costs: [310,750,930],
 
 
     create: function(spawn,params) {
@@ -53,7 +55,7 @@ var roleBarbarian = {
     },
     barbarise:function(){
         // go forth and do what a barbarian does!
-
+        var creep= this.creep;
         this.getOffEdge();
         var enemySpawn = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES,{filter: (str) => str.structureType == STRUCTURE_SPAWN });
         var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
