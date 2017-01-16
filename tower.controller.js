@@ -55,7 +55,8 @@ var towerController = {
                     console.log(result); // no clue when this would happen
                     }
             }
-            else if(wall&& tower.energy >600){
+            else if(wall&& tower.energy >600 && Memory[tower.room.name].phase>2){
+                // don't waste energy on brand new rooms
                 result=tower.repair(wall);
                 if(result != OK){
                     console.log(result); 

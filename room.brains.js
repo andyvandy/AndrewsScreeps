@@ -68,6 +68,12 @@ var roomBrains={
         //Control my links
         try {this.links(room_name);} catch(e){};
 
+        // Control my terminal
+        if(Game.time %100=== 17 ){
+            try {this.terminals(room_name);} catch(e){};
+        }
+        
+
         //spawn creeps
         if(Game.time %10=== 0 ){
             // run this every once in a while to save cpu
@@ -112,6 +118,35 @@ var roomBrains={
             return false;
         }
         source_links[0].transferEnergy(destination_links[0]);
+    },
+    terminals: function(room_name){
+        // this function will control the terminals, for now they just sell the excess but eventually this should be
+        // expanded into it's own file
+        var room = Game.rooms[room_name];
+
+        var terminal = room.terminal;
+        if (terminal=== undefined){
+            //exit the function if there is no terminal in the room
+            return;
+        }
+        if (terminal.store[RESOURCE_ENERGY] <3000){
+            return;
+        }
+
+        // loop through the resources, sell anything I have more than 20k of.
+        for (var resource in terminal.store){
+            if (resource != RESOURCE_ENERGY && terminal.store[resource] >10000){
+                console.log("selling "+resource);
+                var orders= _(_.sortBy(Game.market.getAllOrders(order => order.resourceType == resource && 
+                                                    order.type == ORDER_BUY && 
+                                                    Game.market.calcTransactionCost(1000, room_name, order.roomName) < 3000))).reverse().value();
+                // try to find the best deal
+                if (orders.length  ){
+                    var result =Game.market.deal(orders[0].id,1000, room_name);
+                }
+
+            }       
+        }
     }
 
 };

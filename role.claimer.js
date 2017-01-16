@@ -68,7 +68,7 @@ var roleClaimer = {
         }
         var controller = creep.room.controller;
         if(creep.claimController(controller) ==ERR_NOT_IN_RANGE){
-                creep.moveTo(controller);
+                creep.moveTo(controller, {maxRooms:1});
         }
 
     }

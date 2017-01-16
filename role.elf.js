@@ -16,6 +16,7 @@
     Notes:
         -the elf should repair structures that are below 70% until they are 95% healed
         - the elf prioritizes repairs over other jobs
+        - the elf should only spawn when there are construction sites
 
 */
 
@@ -42,7 +43,12 @@ var roleElf = {
                 flag:params.join("_")};
         var num= 1;
         var name= memory.role+num;
-
+        if (Game.rooms[memory.work]=== undefined){
+            return false;
+        }
+        if (!Game.rooms[memory.work].find(FIND_CONSTRUCTION_SITES).length){
+            return false;
+        }
         var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
         
         while(spawn.canCreateCreep(body,name)=== ERR_NAME_EXISTS){

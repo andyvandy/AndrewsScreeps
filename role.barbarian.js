@@ -6,13 +6,13 @@ var role_proto = require('prototype.role');
 
 var roleBarbarian = {
     
-    parts: [[ATTACK,ATTACK,ATTACK,MOVE,MOVE,MOVE]],
+    parts: [[TOUGH,TOUGH,TOUGH,ATTACK,MOVE,MOVE,MOVE,MOVE]],
 
     // TODO make a helper function for finding the costs
-    costs: [390],
+    costs: [310],
 
 
-    create: function(spawn,info) {
+    create: function(spawn,params) {
         if (!!spawn.spawning){
             // since it returns null otherwise
             //skip this if the spawn is busy
@@ -21,8 +21,10 @@ var roleBarbarian = {
         memory={spawn:spawn.name,
                 home:spawn.room.name,
                 role: "barbarian",
-                work:Game.flags[info.join("_")].pos.roomName,
-                flag:info.join("_")};
+                job: "deploying",
+                checkpoint:0,
+                squad: params[0],
+                flag:params.join("_")};
         var num= 1;
         var name= memory.role+num;
         var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<=spawn.room.energyCapacityAvailable);})))];
@@ -41,13 +43,18 @@ var roleBarbarian = {
         // the guard guards my rooms so I'm only going to look for hostile creeps
         var creep= this.creep;
 
-        this.getOffEdge();
-
-        var creep= this.creep;
-        if (!this.gotoroom(creep.memory.work)){
-            //todo this won't work for barbarians, maybe for guards
-            return 0;
+        if(creep.memory.job=="deploying"){
+            creep.say("deploying");
+            this.deploy();
         }
+        else if(creep.memory.job=="missioning"){
+            this.barbarise();
+        }
+    },
+    barbarise:function(){
+        // go forth and do what a barbarian does!
+
+        this.getOffEdge();
         var enemySpawn = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES,{filter: (str) => str.structureType == STRUCTURE_SPAWN });
         var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         
@@ -85,9 +92,8 @@ var roleBarbarian = {
                 }
             }
         }else{
-            creep.moveTo(Game.flags[creep.memory.flag]);
+            creep.moveTo( Game.flags[creep.memory.squad +"_" + creep.memory.checkpoint+"_FINAL" ]);
         }
-
     }
 };
 

@@ -80,7 +80,7 @@ var roleBuilder = {
         var creep = this.creep;
 
         // note that the constants FIND_DROPPED_ENERGY and FIND_DROPPED_RESOURCES both equal 106...
-        var money = creep.pos.findClosestByRange(FIND_DROPPED_ENERGY ,{filter: (r) = r.resourceType= RESOURCE_ENERGY});
+        var money = creep.pos.findClosestByRange(FIND_DROPPED_ENERGY ,{filter: (r) => r.resourceType== RESOURCE_ENERGY});
         var target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (structure) => {
                     return ((structure.structureType == STRUCTURE_CONTAINER||

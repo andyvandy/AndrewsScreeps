@@ -82,11 +82,16 @@ var roleHauler = {
             body= body.concat([WORK,MOVE,CARRY]);
         }
 
-        if (capacity> numSections*150){
+        if (capacity> numSections*150+200){
             return body;
         }
         else{
-            return false;
+            numSections= (capacity-200)/150; 
+            body= _.fill(Array(numSections*2), CARRY).concat(_.fill(Array(numSections), MOVE)) ;
+            if (Game.flags[source].pos.roomName!=Game.flags[deposit].pos.roomName){
+                body= body.concat([WORK,MOVE,CARRY]);
+            }
+            return body;
         }
         
     },
@@ -195,7 +200,7 @@ var roleHauler = {
         }
 
         var constructionSites = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES);
-        if (constructionSites){
+        if (constructionSites.length){
             creep.build(constructionSites[0]);
         }
 

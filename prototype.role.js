@@ -2,6 +2,7 @@
 
         TODO
             -Camel case all the functions ( and the calls to them)... woops
+            -add a recle creep function
 */
 
 
@@ -71,6 +72,24 @@ var role_proto={
         var exit= creep.pos.findClosestByRange(exit_dir);
         creep.moveTo(exit);
         return false;
+    },
+    deploy: function(){
+        // deploy to the current checkpoint
+        //this is used for military creeps
+        var creep=this.creep;
+        var checkpointFlag= Game.flags[creep.memory.squad+"_"+creep.memory.checkpoint];
+        if (checkpointFlag === undefined){
+            checkpointFlag= Game.flags[creep.memory.squad+"_"+creep.memory.checkpoint+"_FINAL"];
+        }
+        if ( checkpointFlag.name.split("_")[2]=="FINAL" ){
+            creep.memory.job= "missioning";
+            this.escort();
+        }
+        creep.moveTo(checkpointFlag);
+        if (creep.pos.inRangeTo(checkpointFlag,5) ){
+            creep.say("reached!");
+            creep.memory.job="idling";
+        }
     }
     
 };

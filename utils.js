@@ -5,6 +5,7 @@
         -clean up globalDistance
 
 */
+var role_proto = require('prototype.role');
 
 var utils={
     globalDistance:function(pos1,pos2){
@@ -55,6 +56,27 @@ var utils={
         // and returns an array of the costs of each body in order.
         
 
+    },
+
+    roleExists: function(role){
+        try
+        {
+            require("role." + role);
+            return true;
+        }
+        catch(e)
+        {
+            console.log("role exist error"+e);
+            return false;
+        }
+    },
+
+    getRole: function(role){
+        if(!this.roleExists(role))
+            return false;
+        var roleObject = require("role." + role);
+        roleObject = Object.assign( role_proto,roleObject);
+        return roleObject;
     }
 
 };

@@ -24,9 +24,10 @@ var roleHealer = {
 
 	parts: [[HEAL,HEAL,MOVE,MOVE],
             [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,HEAL,HEAL,MOVE],
-            [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,HEAL,HEAL,HEAL,HEAL,MOVE]],
+            [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,HEAL,HEAL,HEAL,HEAL,MOVE],
+            [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,HEAL,HEAL,HEAL,HEAL,HEAL,MOVE]],
 
-    costs: [600,780,1380],
+    costs: [600,780,1380,1680],
 
 	create:function(spawn,params){
 		if (!!spawn.spawning){
@@ -39,7 +40,7 @@ var roleHealer = {
                 job:"deploying",
                 checkpoint:0,
                 military:true,
-                squad: params[3],
+                squad: params[0],
                 flag:params.join("_")};
         var num= 1;
         var name= memory.role+num;
@@ -66,26 +67,46 @@ var roleHealer = {
         if(creep.memory.job=="deploying"){
         	this.deploy();
         }
-        else if(creep.memory.job=="escorting"){
+        else if(creep.memory.job=="missioning"){
         	this.escort();
         }
 
 
     },
-    deploy: function(){
-    	// deploy to the current checkpoint
-    	var creep=this.creep;
-    	var checkpointFlag= Game.flags[Memory.squads.checkpoints[0]];
-    	creep.moveTo(checkpointFlag);
-    	if (creep.pos.inRangeTo(checkpointFlag,5) ){
-    		creep.say("reached!");
-    		creep.memory.job="idling";
-    	}
-    },
     escort: function(){
     	// heal nearby allies, prioritize self.
+    	// the healers should follow non healer creeps\
+    	//TODO make sure they can handle civilians ect
     	var creep=this.creep;
+
+    	//preserve self
+    	if (creep.hits < creep.hitsMax){
+    		this.retreat();
+    		return;
+    	}
+    	if( !this.gotoroom( Game.flags[creep.memory.squad +"_" + creep.memory.checkpoint+"_FINAL" ].pos.roomName ) ){
+            return 0;
+        }
+
+    	var damagedAlly= creep.pos.findClosestByRange(FIND_MY_CREEPS, (c)=> c.hits<c.hitsMax && c.memory.role != "healer");
+    	var closestHealthyAlly= creep.pos.findClosestByRange(FIND_MY_CREEPS, (c)=>  c.memory.role != "healer");
     	
+    	if (damagedAlly){
+    		creep.moveTo(damagedAlly);
+    		creep.heal(damagedAlly);
+    	}else if(closestHealthyAlly){
+    		creep.moveTo(closestHealthyAlly);
+    	}else{
+    		this.retreat()
+    	}
+    },
+    retreat:function(){
+    	// retreat to previous checkpoint and heal self
+    	var creep=this.creep;
+    	if(creep.getActiveBodyparts(HEAL) && (creep.hits<creep.hitsMax) ){
+                creep.heal(creep);
+        }
+        creep.moveTo(Game.flags[creep.memory.squad+"_"+(creep.memory.checkpoint-1)]);
     }
 
 

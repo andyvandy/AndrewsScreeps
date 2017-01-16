@@ -71,12 +71,24 @@ var roomPopulator = {
         // spawn creeps for satellite rooms
         if (!spawned){
             //query for cyan flags
+            var cyanBrownFlags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_CYAN&& f.secondaryColor==COLOR_BROWN); }});
             var cyanFlags = Game.rooms[room_name].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_CYAN); }});
             
-             var spawned=false;
-
+            var spawned=false;
+            for (var i in cyanBrownFlags){
+                // this is so that I can jump the queue
+                if (spawned){
+                    break;
+                }
+                spawned=this.satellite(cyanBrownFlags[i].name,room_name);
+            }
             // for each dependent room build their stuff
             for (var i in cyanFlags){
+                // I do the blue flags first so that guards are higher in priority than harvesters in the case of attacks
+                if (spawned){
+                    break;
+                }
+                spawned=this.satellite(cyanFlags[i].name,room_name);
                 if (spawned){
                     break;
                 }
@@ -85,10 +97,7 @@ var roomPopulator = {
                     // satelliteRemoteMine requires a storage so only phase 3 and up rooms will call this function
                     spawned=this.satelliteRemoteMine(cyanFlags[i].name,room_name);
                 }
-                if (spawned){
-                    break;
-                }
-                spawned=this.satellite(cyanFlags[i].name,room_name);
+                
             } 
         }
 
@@ -290,7 +299,7 @@ var roomPopulator = {
         var roleObject = require("role." + role);
         roleObject = Object.assign( role_proto,roleObject);
         return roleObject;
-    },
+    }
 };
 
 

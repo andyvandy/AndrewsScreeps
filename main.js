@@ -1,5 +1,6 @@
 var roomBrains = require('room.brains');
 var taskMaster = require('task.master');
+var squadController = require('squad.controller');
 var status = require('status');
 
 /*
@@ -25,6 +26,12 @@ module.exports.loop = function () {
         }
     }
 
+
+    //-- control squads
+    // print out a report periodically
+    if(Game.time % 5 === 1 ){
+        squadController.run()
+    }
     // ----control rooms
    
     for( var room in Game.rooms){

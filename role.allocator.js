@@ -3,10 +3,15 @@
     The Allocator has two states: 
         -allocating : allocating resources on throughout the room
         -fetching : getting resources from an approriate source
-    The Allocator's memory has no flags
+        
+
+    The Allocator's memory has the following structure:
+        -specialDelivery: a boolean value indicating wheter the creep is doing a custom job which may involve minerals
+        -delivery: the flag for a custom job
 
     NOTES:
         -when the allocators life is below 200 tick they will try to spawn a successor.
+        -the allocator should move in the smae tick they pickup
    
     TODO:
         -add behaviour for when there are no containers or storages
@@ -63,26 +68,35 @@ var roleAllocator = {
         }
         return false;
     },
+
     run : function(){
         var creep = this.creep;
         
         this.layroads();
         // crontroll what task the creep is assigned
-        if((creep.memory.job =="allocating") && (creep.carry.energy == 0)) {
+        if((creep.memory.job =="allocating") && (_.sum(creep.carry) == 0)) {
             creep.memory.job="fetching";
             creep.say('picking up');
         }
-        if((creep.memory.job=="fetching") && (creep.carry.energy >=100)) {
+        if((creep.memory.job=="fetching") && (_.sum(creep.carry) == creep.carryCapacity)) {
             creep.memory.job ="allocating";
             creep.say('allocating');
         }
 
         //perform the assigned task
         if(creep.memory.job =="allocating"){
-            this.allocate();
+            if (creep.memory.specialDelivery==true){
+                this.specialDropoff();
+            }else{
+                this.allocate();
+            }
         }
         else if(creep.memory.job =="fetching"){
-            this.retrieve();
+            if (creep.memory.specialDelivery==true){
+                this.specialPickUp();
+            }else{
+                this.retrieve();
+            }
         }
 
         // make sure there is an allocator for the next generation lol
@@ -102,6 +116,9 @@ var roleAllocator = {
         if(storage.length){
             if(creep.withdraw(storage[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(storage[0]);
+                if(creep.carry.energy== creep.carryCapacity){
+                    this.allocate(); // so that the allocator moves in the same tick they pickup!
+                }
             } 
         }
         else{
@@ -177,6 +194,96 @@ var roleAllocator = {
             if(creep.transfer(link[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(link[0]);
             }
+        }else{
+            // if there is nothing do a custom job if there are any
+            this.customJobs();
+
+        }
+    },
+    customJobs: function(){
+        /*these are allocation jobs which are designated by a white/grey flag
+            the params of the flag are as follows 
+            SOURCEFLAG_#_DEPOSITFLAG_RESOURCETYPE_THRESHOLD
+        */
+        var creep = this.creep;
+        //query all white grey flags in the room
+        var customJobs = creep.room.find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_WHITE && f.secondaryColor == COLOR_GREY); }});
+        for (var job in customJobs){
+            var params= customJobs[job].name.split("_");
+            var source= params[0];
+            var deposit= params[2];
+            var resource= params[3];
+            var threshold= Number(params[4]);
+            
+            var depositStructure= _.filter(Game.flags[deposit].pos.lookFor(LOOK_STRUCTURES),
+                                     (s)=> s.structureType == STRUCTURE_CONTAINER ||
+                                      s.structureType == STRUCTURE_STORAGE||
+                                      s.structureType == STRUCTURE_TERMINAL);
+
+            var sourceStructure= _.filter(Game.flags[source].pos.lookFor(LOOK_STRUCTURES),
+                                     (s)=> s.structureType == STRUCTURE_CONTAINER ||
+                                      s.structureType == STRUCTURE_STORAGE||
+                                      s.structureType == STRUCTURE_TERMINAL);
+
+            if (depositStructure[0].store[resource] >threshold ){
+                // only fill upto the threshold
+                return;
+            }
+            if (sourceStructure[0].store[resource] <creep.carryCapacity|| sourceStructure[0].store[resource] ===undefined ){
+                // do not take on a delivery when there is not enough to deliver
+                return;
+            }
+            console.log(sourceStructure[0].store[resource]);
+            creep.memory.specialDelivery=true;
+            creep.memory.delivery= customJobs[job].name;
+        } 
+    },
+    specialPickUp:function(){
+        // pick up a resource for a custom delivery
+        var creep = this.creep;
+
+        var params= creep.memory.delivery.split("_");
+        var resource= params[3];
+        var sourceStructure= _.filter(Game.flags[params[0]].pos.lookFor(LOOK_STRUCTURES),
+                                     (s)=> s.structureType == STRUCTURE_CONTAINER ||
+                                      s.structureType == STRUCTURE_STORAGE||
+                                      s.structureType == STRUCTURE_TERMINAL);
+        if (sourceStructure[0].store[resource] < creep.carryCapacity || sourceStructure[0].store[resource] ===undefined){
+            //hopefully to stop the allocator from getting into a situation where they are stuck in a special delivery
+            creep.memory.specialDelivery="false";
+            return;
+        }
+        var result= creep.withdraw(sourceStructure[0], params[3]);
+        if( result== ERR_NOT_IN_RANGE) {
+            creep.moveTo(sourceStructure[0]);
+        } 
+       
+    },
+    specialDropoff:function(){
+        // drop off a resource for a custom delivery
+        var creep = this.creep;
+        var params= creep.memory.delivery.split("_");
+
+        //if the creep has energy from before begining the delivery and the resource in question is different, drop off the energy
+        if (creep.carry[RESOURCE_ENERGY]>0 && params[3] !="energy" ){
+            var storage=creep.room.find(FIND_STRUCTURES,{
+                            filter: (structure) =>{return (structure.structureType ==STRUCTURE_STORAGE)&&(structure.store[RESOURCE_ENERGY] >100 );}});
+            depositResult=  creep.transfer(storage[0], RESOURCE_ENERGY);
+            if (depositResult== ERR_NOT_IN_RANGE){
+                creep.moveTo(storage[0]);
+            }
+            return;
+        }
+
+        var depositStructure= _.filter(Game.flags[params[2]].pos.lookFor(LOOK_STRUCTURES),
+                                     (s)=> s.structureType == STRUCTURE_CONTAINER ||
+                                      s.structureType == STRUCTURE_STORAGE||
+                                      s.structureType == STRUCTURE_TERMINAL);
+        var result= creep.transfer(depositStructure[0], params[3]);
+        if( result== ERR_NOT_IN_RANGE) {
+            creep.moveTo(depositStructure[0]);
+        }else if( result== OK){
+            creep.memory.specialDelivery="false";
         }
     }
 
