@@ -63,14 +63,25 @@ var role_proto={
         if(creep.pos.y==0){creep.move(BOTTOM)}
         if(creep.pos.y==49){creep.move(TOP)}
     },
-    gotoroom:function(room_name){
+    gotoroom:function(room_name,safely =false){
         var creep= this.creep;
+        var avoid=[];
+
         if (creep.room.name==room_name){
             return true;
         }
+        if (safely){
+
+            var purpleFlags= creep.room.find(FIND_FLAGS,{filter: (f)=> f.color== COLOR_PURPLE && f.secondaryColor == COLOR_PURPLE});
+            for (let i in purpleFlags){
+                avoid= avoid.concat([purpleFlags[i]]);
+            }
+        }
         var exit_dir=Game.map.findExit(creep.room.name,room_name);
         var exit= creep.pos.findClosestByRange(exit_dir);
-        creep.moveTo(exit);
+        PathFinder.use(false);
+        creep.moveTo(exit,{avoid:avoid});
+        PathFinder.use(true);
         return false;
     },
     deploy: function(){
@@ -90,8 +101,61 @@ var role_proto={
             creep.say("reached!");
             creep.memory.job="idling";
         }
-    }
+    },
     
+    prices : {
+        "move":50,
+        "work":100,
+        "carry":50,
+        "attack":80,
+        "ranged_attack":150,
+        "heal":250,
+        "claim":600,
+        "tough":10
+    },
+    getCosts:function(bodies){
+        //this function takes as input an array of arrays containing creep bodies 
+        // and returns an array of the costs of each body in order.
+        var output=[];
+        for (let i in bodies){
+            var bodyCost=0;
+            for (let j in bodies[i]){
+                bodyCost += this.prices[bodies[i][j]];
+            }
+            output= output.concat([bodyCost]);
+        }
+        return output;
+    },
+    setToRecycle:function(){
+        //take the creep and set their role to garbage
+        // a piece of garbage will go and recycle itself
+        this.creep.memory.role="garbage";
+    },
+    retreat:function(){
+        // retreat to previous checkpoint
+        // had issues with not being able to find a path before so now I use gotoroom
+        var creep=this.creep;
+        creep.say("retreat!");
+        if(!this.gotoroom(Game.flags[creep.memory.squad+"_"+(creep.memory.checkpoint-1)].pos.roomName)){
+            return;
+        }
+        result= creep.moveTo(Game.flags[creep.memory.squad+"_"+(creep.memory.checkpoint-1)]);
+        if(result!= OK){
+            console.log("retreat movement not OK: "+ result);
+        }
+    },
+    flee: function(){
+        //this job is meant to preserve creeps such as harvesters when hostiles enter the room
+        // the creep should go towards it's spawning room since that should be guaranteed to be safe hopefully
+        // the creep has to have a home and work property
+        var creep= this.creep;
+        creep.say("spoopy!");
+        this.getOffEdge();
+        if(creep.room.name ==creep.memory.work ){
+            // the if statement ensures the creep doesn't go all the way home
+            this.gotoroom(creep.memory.home);
+        }
+    }
 };
 
 

@@ -17,7 +17,7 @@ var roomBrains={
     setPhase:function(room_name){
         // determine the room's current phase
         var room = Game.rooms[room_name];
-        if(room.controller===undefined){
+        if(room===undefined){
             return;
         }
         // if no phase is currently set, set the room phase to 1
@@ -26,6 +26,9 @@ var roomBrains={
         }
         if (Memory[room_name].phase ===undefined){
             Memory[room_name].phase=1;
+        }
+        if(room.controller===undefined){
+            return;
         }
 
         
@@ -58,7 +61,7 @@ var roomBrains={
         }
 
         //manage room defenses
-        if(Game.time %10=== 0 ){
+        if(Game.time %10=== 3 ){
             // run this every once in a while to save cpu
             try {roomDefender.run(room_name);} catch(e){
                 console.log("Room defender error in "+room_name+": "+e );
@@ -133,9 +136,9 @@ var roomBrains={
             return;
         }
 
-        // loop through the resources, sell anything I have more than 20k of.
+        // loop through the resources, sell anything I have more than 50k of.
         for (var resource in terminal.store){
-            if (resource != RESOURCE_ENERGY && terminal.store[resource] >10000){
+            if (resource != RESOURCE_ENERGY && terminal.store[resource] >50000){
                 console.log("selling "+resource);
                 var orders= _(_.sortBy(Game.market.getAllOrders(order => order.resourceType == resource && 
                                                     order.type == ORDER_BUY && 

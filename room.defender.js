@@ -37,7 +37,14 @@ var roomDefender = {
     assessThreats:function(room_name){
         //this function manages transitions between defcon levels
         var room = Game.rooms[room_name];
-        var numHostiles = room.find(FIND_HOSTILE_CREEPS).length;
+        var numHostiles = room.find(FIND_HOSTILE_CREEPS,{filter: (c)=>  !_.contains(Memory.allies,c.owner.username)}).length;
+        
+        // rooms with keeper lairs aren't included atm TODO, include them
+        var numKeeperLairs =  room.find(FIND_HOSTILE_STRUCTURES,{filter: (s)=> s.structureType==STRUCTURE_KEEPER_LAIR}).length;
+        if (numKeeperLairs){
+            Memory[room_name].defense.defcon=0;
+            return;
+        }
         if(numHostiles>2){
             Memory[room_name].defense.defcon=2;
         }else if (numHostiles>0){
@@ -53,6 +60,9 @@ var roomDefender = {
             this.initRoom(room_name);
         }
         this.assessThreats(room_name);
+        
+       
+        this.manageGates(room_name);
         
         // execute the appropriate response
         if(Memory[room_name].defense.defcon==2){
@@ -108,7 +118,8 @@ var roomDefender = {
         console.log("Defcon 1 event in room " +room_name);
         Memory[room_name].defense.lastAttack= Game.time;
         var room = Game.rooms[room_name];
-        if (room.controller.reservation != undefined){
+        var numSourceFlags =  _.filter(Game.flags, f => (f.pos.roomName ==room_name)&&(f.color ==COLOR_RED)&&(f.secondaryColor ==COLOR_RED) ).length;
+        if (numSourceFlags||(room.controller!=undefined&& room.controller.reservation != undefined)){
             // assuming we will have vision if this function is called, right? right.
             this.defcon1Remote(room_name);
         }
@@ -128,7 +139,8 @@ var roomDefender = {
         console.log("Defcon 2 event in room " +room_name);
         Memory[room_name].defense.lastAttack= Game.time;
         var room = Game.rooms[room_name];
-        if (room.controller.reservation != undefined){
+        var numSourceFlags =  _.filter(Game.flags, f => (f.pos.roomName ==room_name)&&(f.color ==COLOR_RED)&&(f.secondaryColor ==COLOR_RED) ).length;
+        if (numSourceFlags||(room.controller!=undefined&& room.controller.reservation != undefined)){
             // assuming we will have vision if this function is called, right? right.
             this.defcon1Remote(room_name);
         }
@@ -140,6 +152,19 @@ var roomDefender = {
         if(Memory[room_name].defense.civiliansActive!=false){
             Memory[room_name].defense.civiliansActive=false;
             this.deactivateCivilians(room_name);
+        }
+    },
+    manageGates: function(room_name){
+        // make my ramparts public if there are no hostiles in the room and there is an ally present
+        var room = Game.rooms[room_name];
+        if (room.controller ===undefined||!room.controller.my){
+            return;
+        }
+        var numAllies = room.find(FIND_HOSTILE_CREEPS,{filter: (c)=>  _.contains(Memory.allies,c.owner.username)}).length;
+        var ramparts= room.find(FIND_STRUCTURES, {filter: (s)=> s.structureType ==STRUCTURE_RAMPART});
+        var open= (numAllies && Memory[room_name].defense.defcon==0);
+        for (let i in ramparts){
+            ramparts[i].setPublic(open);
         }
     }
 

@@ -51,12 +51,7 @@ var utils={
         return Math.sqrt(Math.pow(x1-x2,2) +Math.pow(y1-y2,2));
     },
 
-    costs:function(bodies){
-        //this function takes as input an array of arrays containing creep bodies 
-        // and returns an array of the costs of each body in order.
-        
-
-    },
+    
 
     roleExists: function(role){
         try

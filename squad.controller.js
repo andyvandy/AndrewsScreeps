@@ -25,6 +25,7 @@ var squadController = {
 		for (let i in squadFlags ){
 			this.route(squadFlags[i].name);
 			this.muster(squadFlags[i].name);
+			this.renewSquad(squadFlags[i].name);
 		}
 	},
 	route: function(squad_name){
@@ -74,6 +75,7 @@ var squadController = {
             if (exists.length){
                 continue;
             }
+
             if(utils.roleExists(role)){
                 role = utils.getRole(role);
             }
@@ -85,12 +87,24 @@ var squadController = {
 
         }
 
-        var numcreepsinsquad= _.filter(Game.creeps, (c) =>  (c.memory.squad == squad_name) ).length; 
-        var squadSize= _.filter(Game.flags, (f) => (f.color ==COLOR_BROWN)&&(f.secondaryColor ==COLOR_BLUE)&&(f.name.split("_")[0]== squad_name) ).length;
-        if (numcreepsinsquad== squadSize){
-        	// if the squad is fully spawned, stop spawning creep for the squad
-        	spawnFlag[0].setColor(COLOR_BROWN,COLOR_ORANGE);
+        if (!spawned){
+        	// only do this if not spawning since the creep might be cancelled by a same tick overirde or something
+        	var numcreepsinsquad= _.filter(Game.creeps, (c) =>  (c.memory.squad == squad_name) ).length; 
+	        var squadSize= _.filter(Game.flags, (f) => (f.color ==COLOR_BROWN)&&(f.secondaryColor ==COLOR_BLUE)&&(f.name.split("_")[0]== squad_name) ).length;
+	        if (numcreepsinsquad== squadSize){
+	        	// if the squad is fully spawned, stop spawning creep for the squad
+	        	spawnFlag[0].setColor(COLOR_BROWN,COLOR_ORANGE);
+	        }
         }
+        
+	},
+	renewSquad:function(squad_name){
+		// reset the squad to spawn again
+		var innactiveSpawnFlag= _.filter(Game.flags, (f) => (f.color ==COLOR_BROWN)&&(f.secondaryColor ==COLOR_ORANGE)&&(f.name.split("_")[0]== squad_name) );
+		var numcreepsinsquad= _.filter(Game.creeps, (c) =>  (c.memory.squad == squad_name) ).length;
+		if (innactiveSpawnFlag.length &&!numcreepsinsquad){
+			innactiveSpawnFlag[0].setColor(COLOR_BROWN,COLOR_PURPLE);
+		}
 	}
 
 };

@@ -25,9 +25,9 @@ var role_proto = require('prototype.role');
 
 var roleStarter = {
     parts: [[WORK,WORK,CARRY,MOVE,MOVE],
-            [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE]],
+            [WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE]],
 
-    costs: [200,600],
+    costs: [200,700],
 
     create: function(spawn,params){
         if (!!spawn.spawning){
@@ -92,6 +92,7 @@ var roleStarter = {
         // harvest from the nearest source
 
         var creep= this.creep;
+        creep.say("harvesting");
         var source = creep.pos.findClosestByRange(FIND_SOURCES);
         if (creep.harvest(source)== ERR_NOT_IN_RANGE){
             creep.moveTo(source);
@@ -115,7 +116,7 @@ var roleStarter = {
         if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
             creep.moveTo(creep.room.controller,{maxRooms:1});// beware ,{maxRooms:1} is legacy code
         }
-        if (creep.room.controller.level >1){
+        if (creep.room.controller.level >1||!creep.room.controller.my ){
             //remove the flag if the creep's mission is accomplished
             if (Game.flags[creep.memory.flag] != undefined){
                 Game.flags[creep.memory.flag].remove();

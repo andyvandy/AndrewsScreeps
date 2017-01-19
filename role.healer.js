@@ -85,20 +85,20 @@ var roleHealer = {
     		this.retreat();
     		return;
     	}
-    	if( creep.room.name !=Game.flags[creep.memory.squad +"_" + creep.memory.checkpoint+"_FINAL" ].pos.roomName   ){
-            creep.moveTo(Game.flags[creep.memory.squad +"_" + creep.memory.checkpoint+"_FINAL" ]);
-            return;
-        }
+    	
         this.getOffEdge();
         // creep.memory is undefined for other people's creeps so I need to be very casreful that it's my creep before I try to access that in the following filters!
-    	var damagedAlly= creep.pos.findClosestByRange(FIND_CREEPS,  {filter: (c)=>  (_.contains(Memory.allies,c.owner.userName) || c.my && (c.memory.role != "healer")) &&(c.hits<c.hitsMax)});
-    	var closestHealthyAlly= creep.pos.findClosestByRange(FIND_CREEPS,  {filter: (c)=>   (_.contains(Memory.allies,c.owner.userName)|| c.my&& (c.memory.role != "healer"))});
+    	var damagedAlly= creep.pos.findClosestByRange(FIND_CREEPS,  {filter: (c)=>  (_.contains(Memory.allies,c.owner.username) || c.my && (c.memory.role != "healer")) &&(c.hits<c.hitsMax)});
+    	var closestHealthyAlly= creep.pos.findClosestByRange(FIND_CREEPS,  {filter: (c)=>   (_.contains(Memory.allies,c.owner.username)|| c.my&& (c.memory.role != "healer"))});
     	//console.log(damagedAlly);
     	if (damagedAlly){
     		creep.say("helping");
     		creep.moveTo(damagedAlly);
     		creep.heal(damagedAlly);
-    	}else if(closestHealthyAlly){
+    	}else if( creep.room.name !=Game.flags[creep.memory.squad +"_" + creep.memory.checkpoint+"_FINAL" ].pos.roomName   ){
+            creep.moveTo(Game.flags[creep.memory.squad +"_" + creep.memory.checkpoint+"_FINAL" ]);
+            return;
+        }else if(closestHealthyAlly){
     		creep.say("omw");
     		creep.moveTo(closestHealthyAlly);
     	}else{
@@ -106,19 +106,6 @@ var roleHealer = {
     		creep.say("spoopy!");
     		this.retreat()
     	}
-    },
-    retreat:function(){
-    	// retreat to previous checkpoint
-    	// had issues with not being able to find a path before so now I use gotoroom
-    	var creep=this.creep;
-    	creep.say("retreat!");
-    	if(!this.gotoroom(Game.flags[creep.memory.squad+"_"+(creep.memory.checkpoint-1)].pos.roomName)){
-    		return;
-    	}
-        result= creep.moveTo(Game.flags[creep.memory.squad+"_"+(creep.memory.checkpoint-1)]);
-        if(result!= OK){
-        	console.log("healer retreat movement not OK: "+ result);
-        }
     }
 
 

@@ -68,8 +68,16 @@ var roleElf = {
         var creep= this.creep;
 
         this.getOffEdge();
+        
+        if (Memory[creep.memory.work]!= undefined && Memory[creep.memory.work].defense!= undefined && Memory[creep.memory.work].defense.defcon >=1){
+            // the elf is in danger, it should flee
+            this.flee();
+            return;
+        }
+
         //send the elf to it's room
-        if (!this.gotoroom(creep.memory.work)){
+
+        if (!this.gotoroom(creep.memory.work,safely=true)){
             return 0;
         }
 
@@ -135,7 +143,7 @@ var roleElf = {
         //find a task for the elf
         var creep = this.creep;
         var decrepitBuilding = creep.pos.findClosestByRange(FIND_STRUCTURES,
-                        {filter: (structure) => (structure.hitsMax*0.7 >=structure.hits)&&(structure.structureType!= STRUCTURE_CONTROLLER) }  );
+                        {filter: (structure) => (structure.hitsMax*0.4 >=structure.hits)&&(structure.structureType!= STRUCTURE_CONTROLLER) }  );
         var constructionSite=creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
         if (decrepitBuilding){
             creep.memory.job="fixing";

@@ -45,6 +45,10 @@ var roleHauler = {
                 deposit:params[4]};
         var num= 1;
         var name= memory.role+num;
+        // if the room isn't visible, don't spawn a hauler
+        if (Game.flags[memory.deposit].room ===undefined){
+            return false;
+        }
         var body= this.assessRoute(memory.source,memory.deposit,spawn.room.energyCapacityAvailable);
         if (!body){
             body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<=spawn.room.energyCapacityAvailable);})))];
@@ -71,7 +75,14 @@ var roleHauler = {
         //console.log(distance);
         //each section is one move and two carries
         //use 20 since i'm using raw distance
-        var numSections= Math.ceil((distance*2 *30) /100);
+
+        //check to see if the hauler is likely hauling minerals, if so shrink the hauler
+        var minerals= Game.flags[source].pos.findInRange(FIND_MINERALS,1);
+        var resPerTick=30;
+        if (minerals.length){
+            resPerTick-=20;
+        }
+        var numSections= Math.ceil((distance*2 *resPerTick) /100);
         //console.log(numSections);
         //console.log("dist"+distance);
 
@@ -106,6 +117,13 @@ var roleHauler = {
         this.maintain();
 
         if((creep.memory.job== "hauling" )&& (_.sum(creep.carry) == 0)) {
+            // if the creep won't live to make it back, then tell them to recycle themselves
+            var distance = utils.globalDistance(Game.flags[creep.memory.source].pos, Game.flags[creep.memory.deposit].pos);
+            if (distance *2.1 > creep.ticksToLive){
+                this.setToRecycle();
+                console.log(creep.name+" is recycling itself!");
+                return;
+            }
             creep.memory.job = "fetching";
             creep.say('picking up');
         }
@@ -146,6 +164,9 @@ var roleHauler = {
 
     fetching: function(){
         //the hauler goes to its designated resource collection point and collects energy
+
+
+
         var creep = this.creep;
         var targets=creep.room.lookForAt(LOOK_RESOURCES,Game.flags[creep.memory.source]);
         if (targets.length){
@@ -166,7 +187,16 @@ var roleHauler = {
                 for (var resource in targets[0].store){
                     if (targets[0].store[resource]>0){
                         //this should only realistically occur for one resource unless the main stoarage is out of energy which is another problem entirely
-                        withdrawResult=creep.withdraw(targets[0], resource);
+                        if(targets[0].store[resource] > creep.carryCapacity ){
+                            withdrawResult=creep.withdraw(targets[0], resource);
+                        }
+                        else if ( !creep.pos.isNearTo(targets[0])){
+                            // the creep is not next to the container but shouldn't be withdrawing anyways
+                            withdrawResult=ERR_NOT_IN_RANGE;
+                        }
+                        else{
+                            withdrawResult=false;
+                        }
                     }
                 }
             }

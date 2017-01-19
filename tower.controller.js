@@ -12,7 +12,12 @@ var towerController = {
 
     /** @param {Tower} tower **/
     run: function(tower) {
-        var intruder= tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        var intruder= tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS,{filter: (c)=>  !(_.contains(Memory.allies,c.owner.username))});
+        if (intruder){
+            console.log(intruder.owner.username);
+            console.log(!(_.contains(Memory.allies,intruder.owner.username)));
+            
+        }
         var safeMode= (tower.room.controller.safeMode != undefined);
         if(intruder && !safeMode){
             console.log("INTRUDER IN "+ tower.room.name+"!!!");

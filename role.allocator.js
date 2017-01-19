@@ -71,7 +71,7 @@ var roleAllocator = {
 
     run : function(){
         var creep = this.creep;
-        
+        //this.costs= role_proto.getCosts(this.parts);
         this.layroads();
         // crontroll what task the creep is assigned
         if((creep.memory.job =="allocating") && (_.sum(creep.carry) == 0)) {
@@ -160,7 +160,7 @@ var roleAllocator = {
         var greyRedFlags= creep.room.find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_GREY && f.secondaryColor ==COLOR_RED); }});
         // there should only be one
         if (greyRedFlags.length){
-            var link = _.filter(greyRedFlags[0].pos.lookFor(LOOK_STRUCTURES), (s) => s.structureType==STRUCTURE_LINK && s.energy < 0.9*s.energyCapacity);
+            var link = _.filter(greyRedFlags[0].pos.lookFor(LOOK_STRUCTURES), (s) => s.structureType==STRUCTURE_LINK && s.energy < 0.5*s.energyCapacity);
             if (!link.length){
                 link = false;
             }

@@ -13,13 +13,14 @@ var role_proto = require('prototype.role');
 var roleGuard = {
     
     parts: [[TOUGH,TOUGH,ATTACK,MOVE,MOVE,MOVE],
-            [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK]],
+            [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK],
+            [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,MOVE]],
             //[TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK],
             //[TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,HEAL],
             //[TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,HEAL]],
 
     // TODO make a helper function for finding the costs
-    costs: [250,440],//,600,800,880],
+    costs: [250,440,700],//,600,800,880],
 
 
     create: function(spawn,params) {
@@ -35,7 +36,8 @@ var roleGuard = {
                 flag:params.join("_")};
 
         if (Memory[memory.work].defense.lastAttack!= undefined){
-            if ((Game.time -Memory[memory.home].defense.lastAttack)<3500 && Memory[memory.home].defense.defcon==0 ){
+            var numSources = _.sum(Game.flags, (f) => f.pos.roomName ==Game.flags[memory.work].pos.roomName && f.color == COLOR_RED && f.secondaryColor == COLOR_RED )
+            if (numSources<3 && (Game.time -Memory[memory.home].defense.lastAttack)<3500 && Memory[memory.home].defense.defcon==0 ){
                 console.log("too soon since last attack!");
                 return false;
             }
@@ -62,9 +64,12 @@ var roleGuard = {
         var creep= this.creep;
 
         this.getOffEdge();
+        if (!this.gotoroom(creep.memory.work,safely=true)){
+            return 0;
+        }
 
         var creep= this.creep;
-        var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS,{filter: (c)=>  !(_.contains(Memory.allies,c.owner.username))});
         
         if(creep.getActiveBodyparts(HEAL) && (creep.hits<0.4*creep.hitsMax) ){
                 creep.heal(creep);

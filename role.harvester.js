@@ -30,6 +30,15 @@ var roleHarvester = {
         var num= 1;
         var name= memory.role+num;
         var body = this.parts[ this.costs.indexOf(_.max(this.costs.filter((c) => {return (c<spawn.room.energyCapacityAvailable);})))];
+
+        // check to see if the room is a room with 4000 capacity sources
+        var numSources = _.sum(Game.flags, (f) => (f.pos.roomName ==Game.flags[memory.source].pos.roomName) && f.color == COLOR_RED && f.secondaryColor == COLOR_RED );
+        if(numSources>2){
+            if(spawn.energyCapacityAvailable>=1050){
+                body=[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE];
+            }
+        }
+
         while(spawn.canCreateCreep(body,name)=== ERR_NAME_EXISTS){
             num+=1;
             name= memory.role+num;
@@ -43,13 +52,22 @@ var roleHarvester = {
         return false;
     },   
     run:function() {
+        //determine which task the creep should be doing
+        //control what job the peasant does
         var creep= this.creep;
+
+        if (Memory[creep.memory.work]!= undefined && Memory[creep.memory.work].defense!= undefined && Memory[creep.memory.work].defense.defcon >=1){
+            // the harvester is in danger, it should flee
+            this.flee();
+            return;
+        }
 
         // set up a road network  since the harvester should have a predictable path
         // need to ignore terrain due to this
         this.layroads();
-        //determine which task the creep should be doing
-                //control what job the peasant does
+        
+
+        
         if((creep.memory.job == "harvesting")&&(_.sum(this.creep.carry)== this.creep.carryCapacity) ){
             creep.memory.job = "spending";
             creep.say("Spending time!");

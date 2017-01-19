@@ -16,6 +16,7 @@ Note that the order in which the class is listed determines it's priority since 
 TODO:
     -make the spawns multi roomed
     -implement a spawn queue
+    -fix builders to work with distance builders
 */
 
 var role_proto = require('prototype.role');
@@ -165,7 +166,7 @@ var roomPopulator = {
         
 
         // build builders based on the number of construction sites
-        var builders = _.sum(Game.creeps, (c) => c.memory.role == 'builder'&& c.memory.home ==room_name);
+        var builders = _.sum(Game.creeps, (c) => c.memory.role == 'builder'&& c.memory.home ==room_name && !c.memory.work  );
         var numContructionSites = Game.rooms[room_name].find(FIND_CONSTRUCTION_SITES).length;
         if(((10*builders)<numContructionSites) &&!spawned) {
             roleBuilder.create(spawn);
@@ -206,6 +207,12 @@ var roomPopulator = {
         var storage = Game.rooms[room_name].lookForAt(LOOK_STRUCTURES,storageflags[0]);
 
         for (var mineralflag in mineralflags){
+            //check to see if the source is empty or not
+            var mineral= mineralflags[mineralflag].pos.findInRange(FIND_MINERALS,1);
+            if (!mineral.length || !mineral[0].mineralAmount){
+                continue;
+            }
+
             // we don't count the number of haulers directly because then if I want an extra hauling job for a container it would ruin this
             var harvester = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && c.memory.source ==mineralflags[mineralflag].name);
             var hauler = _.sum(Game.creeps, (c) => c.memory.role == 'hauler' && c.memory.source ==mineralflags[mineralflag].name);
@@ -260,11 +267,14 @@ var roomPopulator = {
         // need to have visibility of the room!!!
         var spawn=_.filter(Game.spawns,(s) => {return s.pos.roomName == parent;})[0];
         var spawned=false;
+        if (Memory[room_name].defense.defcon>0){
+            //don't spawn miners if there are bad guys around
+            return spawned;
+        }
 
         //storage flags are from the parent room while the source flags are from the satellite room
-        var sourceflags =  _.filter(Game.flags, f => (f.pos.roomName ==room_name)&&(f.color ==COLOR_RED) );
-        var storageflags = Game.rooms[parent].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_WHITE); }});
-
+        var sourceflags =  _.filter(Game.flags, f => (f.pos.roomName ==room_name)&&(f.color ==COLOR_RED)&&(f.secondaryColor ==COLOR_RED) );
+        var storageflags = Game.rooms[parent].find(FIND_FLAGS,{filter: (f) => {return (f.color ==COLOR_WHITE)&&(f.secondaryColor ==COLOR_WHITE); }});
 
         var storage = Game.rooms[parent].lookForAt(LOOK_STRUCTURES,storageflags[0]);
         for (var sourceflag in sourceflags){
